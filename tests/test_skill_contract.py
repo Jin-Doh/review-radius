@@ -125,6 +125,11 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("permissions:\n  contents: read", workflow)
         self.assertIn("pull_request:", workflow)
         self.assertIn("name: quality", workflow)
+        self.assertIn(
+            "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            workflow,
+        )
+        self.assertIn("fetch-depth: 2", workflow)
         self.assertIn("python3 -m unittest discover -s tests -v", workflow)
         self.assertIn("markdownlint-cli2@0.23.2", workflow)
         self.assertIn("skills@1.5.21", workflow)
