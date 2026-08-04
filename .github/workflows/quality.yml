@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Show tool versions
         run: |
@@ -39,4 +39,4 @@ jobs:
         run: npx --yes skills@1.5.21 add "$GITHUB_WORKSPACE" --list --agent codex
 
       - name: Check committed whitespace
-        run: git show --check --oneline --format=oneline HEAD
+        run: git diff --check HEAD^ HEAD
