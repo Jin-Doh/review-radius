@@ -1,6 +1,6 @@
 # Review Radius
 
-![Review Radius 标志](assets/review-radius-mark.svg)
+![Review Radius 英文主视觉，传达修复审查意见背后模式的理念](assets/readme/review-radius-hero.png)
 
 **修复审查意见所揭示的同类缺陷。**
 
@@ -21,17 +21,7 @@ Review Radius 以审查意见为起点，在明确边界内检查相关代码中
 审阅者通常指出最先显现的症状。如果只修改被点名的那一行，同类缺陷可能
 仍留在并列实现、别名调用方、失败路径、配置变体或测试中。
 
-```text
-审查意见
-    ↓
-被破坏的不变量
-    ↓
-有边界的相关代码范围
-    ↓
-候选项分类
-    ↓
-根因级修复与证据
-```
+![审查意见如何扩展为同类缺陷检查、有边界的审计和证据闭环](assets/readme/review-radius-workflow.png)
 
 检查半径只扩展到已验证的原因和 PR 获准变更的范围。它比逐行被动修补更
 完整，也比借机进行无关重构更克制。

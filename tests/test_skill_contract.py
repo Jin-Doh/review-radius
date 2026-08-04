@@ -1,5 +1,6 @@
 import json
 import re
+import struct
 import sys
 import unittest
 import xml.etree.ElementTree as ET
@@ -20,6 +21,8 @@ BRAND_ZH_CN = ROOT / "BRAND.zh-CN.md"
 BRAND_MESSAGES = ROOT / "brand/messages.json"
 BRAND_VALIDATION = ROOT / "docs/brand/name-and-language-validation.md"
 MARK = ROOT / "assets/review-radius-mark.svg"
+HERO = ROOT / "assets/readme/review-radius-hero.png"
+WORKFLOW_VISUAL = ROOT / "assets/readme/review-radius-workflow.png"
 OPENAI = ROOT / "skills/review-response/agents/openai.yaml"
 LICENSE = ROOT / "LICENSE"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
@@ -93,6 +96,24 @@ class SkillContractTest(unittest.TestCase):
         self.assertEqual(root.attrib.get("role"), "img")
         self.assertIsNotNone(root.find(f"{namespace}title"))
         self.assertIsNotNone(root.find(f"{namespace}desc"))
+
+    def test_readme_visuals_are_valid_shared_png_assets(self):
+        expected_dimensions = {
+            HERO: (1600, 640),
+            WORKFLOW_VISUAL: (1400, 788),
+        }
+        for path, expected in expected_dimensions.items():
+            with self.subTest(path=path.name):
+                data = path.read_bytes()
+                self.assertEqual(data[:8], b"\x89PNG\r\n\x1a\n")
+                self.assertEqual(struct.unpack(">II", data[16:24]), expected)
+                self.assertLess(len(data), 1_100_000)
+
+        for readme in (README, README_KO, README_ZH_CN):
+            with self.subTest(readme=readme.name):
+                text = readme.read_text()
+                self.assertIn("assets/readme/review-radius-hero.png", text)
+                self.assertIn("assets/readme/review-radius-workflow.png", text)
 
     def test_ripgrep_proxy_normalization_removes_timing_variance(self):
         first = (

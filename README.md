@@ -1,6 +1,6 @@
 # Review Radius
 
-![Review Radius mark](assets/review-radius-mark.svg)
+![Review Radius — Fix the pattern behind the comment](assets/readme/review-radius-hero.png)
 
 **Fix the pattern behind the comment.**
 
@@ -22,17 +22,7 @@ A reviewer usually points to the first visible symptom. Fixing only that line
 can leave the same defect in a sibling implementation, aliased caller, failure
 path, configuration variant, or test.
 
-```text
-review comment
-      ↓
-violated invariant
-      ↓
-bounded related surface
-      ↓
-candidate disposition
-      ↓
-cause-level fix and evidence
-```
+![A review comment expands into a defect class, bounded audit, and evidence-backed fix](assets/readme/review-radius-workflow.png)
 
 The radius expands only as far as the validated cause and authorized PR scope.
 This is broader than line-level patching and narrower than opportunistic

@@ -1,6 +1,6 @@
 # Review Radius
 
-![Review Radius 심볼](assets/review-radius-mark.svg)
+![Review Radius 영문 히어로 이미지와 코멘트 뒤의 패턴을 고친다는 메시지](assets/readme/review-radius-hero.png)
 
 **리뷰가 드러낸 결함 패턴까지 고치세요.**
 
@@ -22,17 +22,7 @@ Review Radius는 리뷰 코멘트를 출발점으로 삼아 같은 원인에서 
 같은 결함이 형제 구현, alias caller, 실패 경로, 설정 변형이나 테스트에 남을
 수 있습니다.
 
-```text
-리뷰 코멘트
-    ↓
-깨진 불변 조건
-    ↓
-제한된 관련 표면
-    ↓
-후보 분류
-    ↓
-원인 수준 수정과 증거
-```
+![리뷰 코멘트가 결함군 탐색, 제한된 점검, 증거 기반 수정으로 이어지는 과정](assets/readme/review-radius-workflow.png)
 
 탐색 반경은 검증된 원인과 허용된 PR 범위까지만 확장됩니다. 한 줄만 고치는
 대응보다는 넓지만, 기회성 리팩터링보다는 좁습니다.

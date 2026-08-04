@@ -133,6 +133,14 @@ Use the mark from `assets/review-radius-mark.svg`. Preserve its proportions,
 colors, and clear space of at least one inner-dot diameter. Do not add gradients,
 shadows, code brackets, robot imagery, or GitHub-specific marks.
 
+Use `assets/readme/review-radius-hero.png` as the shared README hero and
+`assets/readme/review-radius-workflow.png` as the shared visual explanation.
+Both contain English display text by design so the public identity remains
+consistent across locales. Localized READMEs must keep their localized primary
+line next to the hero and provide localized alt text for both images. Do not
+create locale-specific raster variants unless the full three-locale set is
+updated and reviewed together.
+
 ### Typography
 
 Use the host platform's system sans-serif for product prose and a monospaced
