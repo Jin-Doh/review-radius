@@ -1,13 +1,14 @@
 ---
 name: review-response
-description: Evidence-driven GitHub PR review response. Use when asked to inspect or address PR review comments, requested changes, unresolved threads, or follow-up reviews; validate each comment, derive the underlying invariant, audit related code for the same defect class, implement bounded fixes, run gates, push, reply, resolve threads, and perform the final review and CI recheck.
+description: Review Radius is evidence-driven GitHub PR review response. Use when asked to inspect or address PR review comments, requested changes, unresolved threads, or follow-up reviews; validate each comment, derive the underlying invariant, audit related code for the same defect class, implement bounded fixes, run gates, push, reply, resolve threads, and perform the final review and CI recheck.
 ---
 
-# Review Response
+# Review Radius
 
-Handle GitHub review feedback end to end. Treat each comment as evidence of a
-potential defect class, not as an exhaustive boundary. Keep expansion bounded
-by the validated root cause and authorized PR scope.
+Fix the pattern, not just the comment. Handle GitHub review feedback end to end
+by treating each comment as evidence of a potential defect class, not as an
+exhaustive boundary. Keep the review radius bounded by the validated root cause
+and authorized PR scope.
 
 ## Workflow
 

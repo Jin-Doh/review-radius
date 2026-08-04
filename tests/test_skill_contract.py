@@ -2,6 +2,7 @@ import json
 import re
 import sys
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -10,11 +11,37 @@ SKILL = ROOT / "skills/review-response/SKILL.md"
 NAVIGATION = ROOT / "skills/review-response/references/code-navigation.md"
 EXPERIMENT = ROOT / "docs/experiments/2026-08-04-code-navigation-tool-routing.md"
 RESULTS = ROOT / "experiments/tool-routing/results/latest.json"
+README = ROOT / "README.md"
+README_KO = ROOT / "README.ko.md"
+BRAND = ROOT / "BRAND.md"
+MARK = ROOT / "assets/review-radius-mark.svg"
+OPENAI = ROOT / "skills/review-response/agents/openai.yaml"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
 from run_benchmark import normalize_rg_output  # noqa: E402
 
 
 class SkillContractTest(unittest.TestCase):
+    def test_brand_contract_preserves_the_stable_skill_identity(self):
+        skill = SKILL.read_text()
+        readme = README.read_text()
+        brand = BRAND.read_text()
+        openai = OPENAI.read_text()
+
+        self.assertIn("# Review Radius", skill)
+        self.assertIn("Fix the pattern, not just the comment.", readme)
+        self.assertIn("`review-response`", brand)
+        self.assertIn("name: review-response", skill)
+        self.assertIn("Review Radius", openai)
+        self.assertTrue(README_KO.is_file())
+
+    def test_brand_mark_is_valid_accessible_svg(self):
+        root = ET.parse(MARK).getroot()
+        namespace = "{http://www.w3.org/2000/svg}"
+        self.assertEqual(root.tag, f"{namespace}svg")
+        self.assertEqual(root.attrib.get("role"), "img")
+        self.assertIsNotNone(root.find(f"{namespace}title"))
+        self.assertIsNotNone(root.find(f"{namespace}desc"))
+
     def test_ripgrep_proxy_normalization_removes_timing_variance(self):
         first = (
             '{"type":"summary","data":{"elapsed_total":{"nanos":1},'

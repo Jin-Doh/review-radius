@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-labelledby="title desc">
+  <title id="title">Review Radius</title>
+  <desc id="desc">Concentric review and evidence rings around one observed signal.</desc>
+  <rect width="192" height="192" rx="40" fill="#0B1220"/>
+  <circle cx="82" cy="100" r="58" fill="none" stroke="#38BDF8" stroke-width="8"/>
+  <circle cx="82" cy="100" r="36" fill="none" stroke="#2563EB" stroke-width="8"/>
+  <path d="M82 100 127 63" fill="none" stroke="#F8FAFC" stroke-linecap="round" stroke-width="7"/>
+  <circle cx="82" cy="100" r="11" fill="#F59E0B"/>
+  <circle cx="127" cy="63" r="9" fill="#34D399" stroke="#0B1220" stroke-width="5"/>
+</svg>
