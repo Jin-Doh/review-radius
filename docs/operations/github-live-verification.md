@@ -21,6 +21,8 @@ Ruleset ID: `20354884`
   `pull_request` rather than `always` or `exempt`.
 - Repository Actions permissions are read-only and workflows cannot approve
   pull requests.
+- Actions are restricted to GitHub-owned actions and full-length commit SHA
+  references.
 - Secret scanning, push protection, dependency alerts, automated security
   fixes, and private vulnerability reporting are enabled.
 
