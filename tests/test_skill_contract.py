@@ -20,6 +20,9 @@ BRAND_KO = ROOT / "BRAND.ko.md"
 BRAND_ZH_CN = ROOT / "BRAND.zh-CN.md"
 BRAND_MESSAGES = ROOT / "brand/messages.json"
 BRAND_NAMING = ROOT / "docs/brand/naming-and-language.md"
+BRAND_RESEARCH_STATE = (
+    ROOT / "RESEARCH/review_radius_brand_validation_20260804_044208/state.json"
+)
 RULESET = ROOT / ".github/rulesets/main.json"
 QUALITY_WORKFLOW = ROOT / ".github/workflows/quality.yml"
 CODEOWNERS = ROOT / ".github/CODEOWNERS"
@@ -116,6 +119,17 @@ class SkillContractTest(unittest.TestCase):
                 self.assertNotIn(legacy_id, path.read_text())
 
         self.assertFalse((ROOT / "skills" / legacy_id).exists())
+
+    def test_historical_brand_validation_remains_bound_to_its_snapshot(self):
+        state = json.loads(BRAND_RESEARCH_STATE.read_text())
+        artifact_path = ROOT / state["artifacts"]["repository_validation"]
+        artifact = artifact_path.read_text()
+
+        self.assertTrue(artifact_path.is_file())
+        self.assertIn("Observed: 2026-08-04", artifact)
+        self.assertIn("preserve\n`review-response`", artifact)
+        self.assertIn("## Collision screen", artifact)
+        self.assertNotEqual(artifact_path, BRAND_NAMING)
 
     def test_mit_license_is_canonical_and_visible_in_every_locale(self):
         license_text = LICENSE.read_text()
