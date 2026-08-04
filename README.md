@@ -144,3 +144,7 @@ and trademark clearance remains unresolved. See [BRAND.md](BRAND.md) for the
 identity system and
 [name and language validation](docs/brand/name-and-language-validation.md) for
 the evidence and launch constraints.
+
+## License
+
+Review Radius is available under the [MIT License](LICENSE).

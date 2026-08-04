@@ -65,6 +65,9 @@
 
 ## 发布条件
 
+本项目依据根目录 `LICENSE` 中的 MIT License 发布。所有语言版本的 README
+都必须提供该文件的链接。
+
 截至 2026-08-04，公开 GitHub 与所检查的主要包注册表未发现同名项目；
 但 `reviewradius.com` 已被注册，商标冲突情况仍未解决。因此不得暗示该名称
 已经完成法律清查。范围与依据见[验证记录](docs/brand/name-and-language-validation.md)。

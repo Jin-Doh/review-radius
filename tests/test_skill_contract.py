@@ -21,6 +21,7 @@ BRAND_MESSAGES = ROOT / "brand/messages.json"
 BRAND_VALIDATION = ROOT / "docs/brand/name-and-language-validation.md"
 MARK = ROOT / "assets/review-radius-mark.svg"
 OPENAI = ROOT / "skills/review-response/agents/openai.yaml"
+LICENSE = ROOT / "LICENSE"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
 from run_benchmark import normalize_rg_output  # noqa: E402
 
@@ -67,6 +68,23 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("reviewradius.com", validation)
         self.assertIn("Trademark availability is unresolved", validation)
         self.assertIn("`zh-CN`, not `Zn`", validation)
+
+    def test_mit_license_is_canonical_and_visible_in_every_locale(self):
+        license_text = LICENSE.read_text()
+        self.assertTrue(license_text.startswith("MIT License\n\n"))
+        self.assertIn("Copyright (c) 2026 KyungHo Kim", license_text)
+        self.assertIn("Permission is hereby granted, free of charge", license_text)
+        self.assertIn(
+            'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND',
+            license_text,
+        )
+        self.assertTrue(license_text.endswith("SOFTWARE.\n"))
+
+        for readme in (README, README_KO, README_ZH_CN):
+            with self.subTest(readme=readme.name):
+                self.assertIn("[MIT License](LICENSE)", readme.read_text())
+
+        self.assertNotIn("currently has no license file", BRAND.read_text())
 
     def test_brand_mark_is_valid_accessible_svg(self):
         root = ET.parse(MARK).getroot()

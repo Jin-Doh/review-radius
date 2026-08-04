@@ -181,8 +181,8 @@ contracts.
 
 - Create the public remote under the chosen owner with repository name
   `review-radius` if available.
-- Choose and add an explicit open-source license before public distribution;
-  the repository currently has no license file.
+- Keep the root `LICENSE` file and localized README license links intact; the
+  project is distributed under the MIT License.
 - Replace `<repository-url>` in install examples with the canonical URL.
 - Set the GitHub repository description from the short description above.
 - Use `assets/review-radius-mark.svg` as the basis for the social preview.

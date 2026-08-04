@@ -91,3 +91,7 @@ Review Radius 不会：
 `reviewradius.com` 已被注册，商标可用性仍未确认。请参阅
 [简体中文品牌指南](BRAND.zh-CN.md)和
 [名称与语言验证记录](docs/brand/name-and-language-validation.md)。
+
+## 许可证
+
+Review Radius 采用 [MIT License](LICENSE)。

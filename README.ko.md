@@ -93,3 +93,7 @@ Review Radius는 다음을 하지 않습니다.
 가능성은 확인되지 않았습니다. 자세한 메시지와 시각 규칙은
 [한국어 브랜드 가이드](BRAND.ko.md), 근거와 출시 조건은
 [이름·언어 검증 문서](docs/brand/name-and-language-validation.md)에 있습니다.
+
+## 라이선스
+
+Review Radius는 [MIT License](LICENSE)에 따라 사용할 수 있습니다.
