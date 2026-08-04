@@ -1,0 +1,4 @@
+interface:
+  display_name: "리뷰 대응"
+  short_description: "리뷰의 근본 원인과 동일 결함군까지 점검합니다."
+  default_prompt: "Use $review-response to address this PR feedback, audit the same defect class, and verify the bounded fix."
