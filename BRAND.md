@@ -24,7 +24,7 @@ validated cause and authorized change boundary.
 | --- | --- | --- |
 | Project and product | **Review Radius** | Use in prose, headings, repository descriptions, and visual identity. |
 | Installable skill | `review-response` | Keep stable for installation and `$review-response` invocation. |
-| Suggested repository | `review-radius` | Adopt when a public remote is created; do not rename the local directory merely for appearance. |
+| Canonical repository | [`Jin-Doh/review-radius`](https://github.com/Jin-Doh/review-radius) | Use for public links and installation examples. |
 | Core workflow concept | review radius | Lowercase when describing the bounded search surface rather than the product. |
 
 <!-- markdownlint-enable MD013 -->
@@ -187,11 +187,10 @@ contracts.
 
 ## Public-launch checklist
 
-- Create the public remote under the chosen owner with repository name
-  `review-radius` if available.
+- Keep the canonical public remote at `Jin-Doh/review-radius`.
 - Keep the root `LICENSE` file and localized README license links intact; the
   project is distributed under the MIT License.
-- Replace `<repository-url>` in install examples with the canonical URL.
+- Keep install examples pinned to the canonical GitHub URL.
 - Set the GitHub repository description from the short description above.
 - Use `assets/review-radius-mark.svg` as the basis for the social preview.
 - Do not imply ownership of `reviewradius.com`; it was already registered when

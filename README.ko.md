@@ -39,7 +39,7 @@ Review Radius는 리뷰 코멘트를 출발점으로 삼아 같은 원인에서 
 ## 설치
 
 ```sh
-npx skills add <repository-url> \
+npx skills add https://github.com/Jin-Doh/review-radius \
   --skill review-response \
   --agent codex \
   -y
@@ -87,3 +87,8 @@ Review Radius는 다음을 하지 않습니다.
 ## 라이선스
 
 Review Radius는 [MIT License](LICENSE)에 따라 사용할 수 있습니다.
+
+## 기여와 보안
+
+1인 maintainer를 고려한 PR 정책은 [CONTRIBUTING.md](CONTRIBUTING.md), 비공개
+취약점 신고 방법은 [SECURITY.md](SECURITY.md)를 참고하세요.

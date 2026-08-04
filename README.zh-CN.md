@@ -38,7 +38,7 @@ Review Radius 以审查意见为起点，在明确边界内检查相关代码中
 ## 安装
 
 ```sh
-npx skills add <repository-url> \
+npx skills add https://github.com/Jin-Doh/review-radius \
   --skill review-response \
   --agent codex \
   -y
@@ -85,3 +85,8 @@ Review Radius 不会：
 ## 许可证
 
 Review Radius 采用 [MIT License](LICENSE)。
+
+## 贡献与安全
+
+单维护者 PR 政策见 [CONTRIBUTING.md](CONTRIBUTING.md)，私密漏洞报告方式见
+[SECURITY.md](SECURITY.md)。

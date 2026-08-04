@@ -20,6 +20,9 @@ BRAND_KO = ROOT / "BRAND.ko.md"
 BRAND_ZH_CN = ROOT / "BRAND.zh-CN.md"
 BRAND_MESSAGES = ROOT / "brand/messages.json"
 BRAND_VALIDATION = ROOT / "docs/brand/name-and-language-validation.md"
+RULESET = ROOT / ".github/rulesets/main.json"
+QUALITY_WORKFLOW = ROOT / ".github/workflows/quality.yml"
+CODEOWNERS = ROOT / ".github/CODEOWNERS"
 MARK = ROOT / "assets/review-radius-mark.svg"
 HERO = ROOT / "assets/readme/review-radius-hero.png"
 WORKFLOW_VISUAL = ROOT / "assets/readme/review-radius-workflow.png"
@@ -88,6 +91,58 @@ class SkillContractTest(unittest.TestCase):
                 self.assertIn("[MIT License](LICENSE)", readme.read_text())
 
         self.assertNotIn("currently has no license file", BRAND.read_text())
+
+    def test_public_repository_policy_avoids_single_maintainer_deadlock(self):
+        ruleset = json.loads(RULESET.read_text())
+        rules = {rule["type"]: rule for rule in ruleset["rules"]}
+        pull_request = rules["pull_request"]["parameters"]
+        checks = rules["required_status_checks"]["parameters"]
+
+        self.assertEqual(pull_request["required_approving_review_count"], 0)
+        self.assertFalse(pull_request["require_code_owner_review"])
+        self.assertFalse(pull_request["require_last_push_approval"])
+        self.assertTrue(pull_request["required_review_thread_resolution"])
+        self.assertEqual(pull_request["allowed_merge_methods"], ["squash"])
+        self.assertEqual(
+            {item["context"] for item in checks["required_status_checks"]},
+            {"quality"},
+        )
+        self.assertTrue(checks["strict_required_status_checks_policy"])
+        self.assertEqual(
+            {rule_type for rule_type in rules},
+            {
+                "deletion",
+                "non_fast_forward",
+                "required_linear_history",
+                "pull_request",
+                "required_status_checks",
+            },
+        )
+        self.assertEqual(ruleset["bypass_actors"][0]["bypass_mode"], "pull_request")
+
+    def test_public_repository_community_and_ci_contract(self):
+        workflow = QUALITY_WORKFLOW.read_text()
+        self.assertIn("permissions:\n  contents: read", workflow)
+        self.assertIn("pull_request:", workflow)
+        self.assertIn("name: quality", workflow)
+        self.assertIn("python3 -m unittest discover -s tests -v", workflow)
+        self.assertIn("markdownlint-cli2@0.23.2", workflow)
+        self.assertIn("skills@1.5.21", workflow)
+        self.assertEqual(CODEOWNERS.read_text().strip(), "* @Jin-Doh")
+
+        for path in (
+            ROOT / "CONTRIBUTING.md",
+            ROOT / "SECURITY.md",
+            ROOT / "GOVERNANCE.md",
+            ROOT / ".github/PULL_REQUEST_TEMPLATE.md",
+            ROOT / ".github/dependabot.yml",
+        ):
+            self.assertTrue(path.is_file(), path)
+
+        for readme in (README, README_KO, README_ZH_CN):
+            text = readme.read_text()
+            self.assertIn("https://github.com/Jin-Doh/review-radius", text)
+            self.assertNotIn("<repository-url>", text)
 
     def test_brand_mark_is_valid_accessible_svg(self):
         root = ET.parse(MARK).getroot()

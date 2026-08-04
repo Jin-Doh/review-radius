@@ -56,13 +56,13 @@ refactoring.
 List the skills exposed by a checkout or published repository:
 
 ```sh
-npx skills add <repository-url> --list
+npx skills add https://github.com/Jin-Doh/review-radius --list
 ```
 
 Install Review Radius for Codex:
 
 ```sh
-npx skills add <repository-url> \
+npx skills add https://github.com/Jin-Doh/review-radius \
   --skill review-response \
   --agent codex \
   -y
@@ -138,3 +138,8 @@ the evidence and launch constraints.
 ## License
 
 Review Radius is available under the [MIT License](LICENSE).
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the single-maintainer pull request
+policy and [SECURITY.md](SECURITY.md) for private vulnerability reporting.

@@ -1,0 +1,42 @@
+name: Bug report
+description: Report incorrect Review Radius behavior or documentation.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report security vulnerabilities here. Use the private security
+        reporting link in SECURITY.md.
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: What happened, including exact output when useful?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest deterministic scenario or repository link.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Agent, operating system, tool versions, and relevant configuration.
+  - type: textarea
+    id: related
+    attributes:
+      label: Related surface
+      description: Note similar locations, variants, or failure paths already checked.
