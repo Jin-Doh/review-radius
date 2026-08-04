@@ -26,7 +26,8 @@ Ruleset ID: `20354884`
 
 ## Post-activation merge-path proof
 
-Verification pull request: pending creation.
+Verification pull request:
+[PR #3](https://github.com/Jin-Doh/review-radius/pull/3).
 
 The verification pull request adds this record after ruleset activation. It
 must demonstrate that a maintainer-authored change is blocked while `quality`
