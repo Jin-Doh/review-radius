@@ -87,6 +87,9 @@ Review Radius는 다음을 하지 않습니다.
 ## 라이선스
 
 Review Radius는 [MIT License](LICENSE)에 따라 사용할 수 있습니다.
+선택형 벤치마크가 호출하는 Graphify `graphifyy==0.9.32`의 명시 라이선스는
+Apache License 2.0입니다. 원본 라이선스와 저작자 표시, 사용 범위는
+[제3자 고지](THIRD_PARTY_NOTICES.md)를 참고하세요.
 
 ## 기여와 보안
 

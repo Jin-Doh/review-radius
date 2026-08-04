@@ -85,6 +85,9 @@ Review Radius 不会：
 ## 许可证
 
 Review Radius 采用 [MIT License](LICENSE)。
+可选基准测试调用的 Graphify `graphifyy==0.9.32` 声明采用 Apache License
+2.0。其上游许可证、署名信息及集成边界见
+[第三方声明](THIRD_PARTY_NOTICES.md)。
 
 ## 贡献与安全
 

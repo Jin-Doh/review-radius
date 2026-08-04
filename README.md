@@ -138,6 +138,9 @@ the evidence and launch constraints.
 ## License
 
 Review Radius is available under the [MIT License](LICENSE).
+The optional benchmark invokes Graphify `graphifyy==0.9.32`, which declares the
+Apache License 2.0; see [Third-party notices](THIRD_PARTY_NOTICES.md) for its
+upstream license, attribution, and integration boundary.
 
 ## Contributing and security
 

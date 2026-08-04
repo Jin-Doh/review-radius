@@ -34,7 +34,10 @@ Requirements:
 - `uv` for the pinned, isolated Graphify run
 
 Graphify is executed with `uvx --from graphifyy==0.9.32`; it is not installed
-globally. Set `SKIP_GRAPHIFY=1` to run the first three methods only.
+globally. That release declares the Apache License 2.0; its upstream license and
+attribution are recorded in the repository's
+[third-party notices](../../THIRD_PARTY_NOTICES.md). Set `SKIP_GRAPHIFY=1` to
+run the first three methods only.
 
 The runner writes `results/latest.json` and `results/REPORT.md`. Graphify builds
 its index in an isolated temporary copy of the fixture so every run measures a

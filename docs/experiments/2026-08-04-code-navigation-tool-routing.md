@@ -100,7 +100,10 @@ python3 experiments/tool-routing/run_benchmark.py
 
 The recorded run used Python 3.14.6, ast-grep 0.45.0, TypeScript language server
 5.3.0, and `graphifyy==0.9.32` through `uvx`. Graphify is pinned for the run and
-is not installed globally. Machine-readable evidence is in
+is not installed globally. The release declares the Apache License 2.0; its
+upstream license and attribution are recorded in
+[the third-party notices](../../THIRD_PARTY_NOTICES.md). Machine-readable
+evidence is in
 [`latest.json`](../../experiments/tool-routing/results/latest.json), and the
 generated detailed report is in
 [`REPORT.md`](../../experiments/tool-routing/results/REPORT.md).

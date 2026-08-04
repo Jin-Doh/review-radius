@@ -28,6 +28,7 @@ HERO = ROOT / "assets/readme/review-radius-hero.png"
 WORKFLOW_VISUAL = ROOT / "assets/readme/review-radius-workflow.png"
 OPENAI = ROOT / "skills/review-response/agents/openai.yaml"
 LICENSE = ROOT / "LICENSE"
+THIRD_PARTY_NOTICES = ROOT / "THIRD_PARTY_NOTICES.md"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
 from run_benchmark import normalize_rg_output  # noqa: E402
 
@@ -91,6 +92,29 @@ class SkillContractTest(unittest.TestCase):
                 self.assertIn("[MIT License](LICENSE)", readme.read_text())
 
         self.assertNotIn("currently has no license file", BRAND.read_text())
+
+    def test_graphify_use_has_versioned_third_party_attribution(self):
+        notice = THIRD_PARTY_NOTICES.read_text()
+        self.assertIn("https://github.com/Graphify-Labs/graphify", notice)
+        self.assertIn("graphifyy==0.9.32", notice)
+        self.assertIn("v0.9.32/LICENSE", notice)
+        self.assertIn("v0.9.32/NOTICE", notice)
+        self.assertIn("Apache License 2.0", notice)
+        self.assertIn("not vendored", notice)
+        self.assertNotIn("Graphify", LICENSE.read_text())
+
+        for readme in (README, README_KO, README_ZH_CN):
+            with self.subTest(readme=readme.name):
+                text = readme.read_text()
+                self.assertIn("graphifyy==0.9.32", text)
+                self.assertIn("(THIRD_PARTY_NOTICES.md)", text)
+
+        for path in (
+            ROOT / "experiments/tool-routing/README.md",
+            EXPERIMENT,
+        ):
+            with self.subTest(path=path):
+                self.assertIn("../../THIRD_PARTY_NOTICES.md", path.read_text())
 
     def test_public_repository_policy_avoids_single_maintainer_deadlock(self):
         ruleset = json.loads(RULESET.read_text())
