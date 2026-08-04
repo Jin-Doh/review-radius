@@ -55,8 +55,18 @@ by the validated root cause and authorized PR scope.
      analogues that may use different syntax.
    - Inspect related tests, configuration variants, migrations, and
      documentation when they encode the same behavior.
-   - Prefer `rg` for repository search and use language-aware navigation when
-     available. Do not claim completeness from one text search.
+   - Route navigation by question and capability instead of running every tool:
+     use `rg` for literal/configuration discovery, AST for syntax-shaped
+     analogues, LSP for symbol relationships, and a fresh code graph for
+     bounded direct or transitive traversal.
+   - Prefer the compact route when those capabilities are justified: AST roots
+     -> bounded graph candidates -> LSP verification and delta. Do not expose
+     accumulated raw tool output when a compact evidence ledger is sufficient.
+   - Read [Code navigation and evidence routing](references/code-navigation.md)
+     before using AST, LSP, or Graphify. Record capability and freshness checks,
+     fallbacks, and any resulting coverage gap.
+   - Do not claim completeness from one text search, one graph query, or one
+     language-server response.
 
 6. Classify every credible candidate.
    - Mark it `affected` when the same invariant is violated within the current
@@ -68,6 +78,11 @@ by the validated root cause and authorized PR scope.
      broader product, architecture, repository, migration, or production
      decision.
    - Treat any unclassified high-risk candidate as a completion blocker.
+   - Keep candidate provenance distinct: `text-matched`, `AST-matched`,
+     `graph-extracted`, `graph-inferred`, `LSP-resolved`, or `runtime-proven`.
+     A graph-inferred or ambiguous edge is a lead, not defect confirmation.
+   - Maintain a compact ledger containing candidate, `path:line`, relation,
+     provenance, freshness/confidence, and disposition.
 
 7. Plan by defect class.
    - Group fixes by root cause or invariant and map each review thread to its
@@ -135,6 +150,9 @@ by the validated root cause and authorized PR scope.
       and the PR URL.
     - If no related defect was found, report what surfaces and patterns were
       checked instead of stating only that none existed.
+    - Report which navigation capabilities were used, whether their state was
+      current for the inspected PR head, and which semantic or dynamic surfaces
+      remain unverified.
 
 ## Completion contract
 

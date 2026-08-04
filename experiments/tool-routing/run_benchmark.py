@@ -96,6 +96,21 @@ def parse_rg_files(output: str) -> set[Path]:
     return paths
 
 
+def normalize_rg_output(output: str) -> str:
+    """Remove ripgrep timing and self-sized fields before token-proxy scoring."""
+    normalized: list[str] = []
+    for line in output.splitlines():
+        item = json.loads(line)
+        data = item.get("data", {})
+        data.pop("elapsed_total", None)
+        stats = data.get("stats")
+        if isinstance(stats, dict):
+            stats.pop("elapsed", None)
+            stats.pop("bytes_printed", None)
+        normalized.append(json.dumps(item, sort_keys=True, separators=(",", ":")))
+    return "\n".join(normalized) + ("\n" if normalized else "")
+
+
 def functions_in_files(paths: set[Path]) -> set[str]:
     result: set[str] = set()
     for path in paths:
@@ -132,12 +147,13 @@ def baseline() -> MethodResult:
         "toLowerCase",
         "src",
     )
-    files = parse_rg_files(result.stdout)
+    normalized = normalize_rg_output(result.stdout)
+    files = parse_rg_files(normalized)
     elapsed = (time.perf_counter() - start) * 1000
     return MethodResult(
         name="rg+raw",
         candidates=functions_in_files(files),
-        tool_bytes=len(result.stdout.encode()),
+        tool_bytes=len(normalized.encode()),
         source_bytes=full_source_bytes(files),
         elapsed_ms=elapsed,
         notes=["Single review-anchor pass; reads every matched file in full."],
@@ -172,11 +188,12 @@ def ast_search() -> tuple[MethodResult, set[str], str]:
         rg_args.extend(["-e", root])
     rg_args.append("src")
     caller_result = command(*rg_args)
-    caller_files = parse_rg_files(caller_result.stdout)
+    normalized_callers = normalize_rg_output(caller_result.stdout)
+    caller_files = parse_rg_files(normalized_callers)
     read_files = ast_files | caller_files
     candidates = functions_in_files(read_files)
     elapsed = (time.perf_counter() - start) * 1000
-    raw = ast_result.stdout + caller_result.stdout
+    raw = ast_result.stdout + normalized_callers
     return (
         MethodResult(
             name="rg+ast",

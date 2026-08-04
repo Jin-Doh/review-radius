@@ -48,6 +48,11 @@ to text and AST methods; LSP methods are charged only small source windows
 around returned symbols. Cold index time and warm query time are reported
 separately for Graphify.
 
+Before scoring ripgrep JSON, the runner removes elapsed-time and self-sized
+`bytes_printed` fields and canonicalizes the remaining JSON. Those fields vary
+between equivalent executions and would otherwise make the proxy
+nondeterministic. Wall-clock measurements remain observational and may vary.
+
 The cumulative method charges raw outputs from every stage. The compact routing
 method represents the intended adapter contract: tools may process rich data,
 but the model receives only roots, graph candidates, LSP-only additions, and

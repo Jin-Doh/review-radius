@@ -166,18 +166,20 @@ repetitions:
 
 | Method | Recall | Precision | Token proxy |
 | --- | ---: | ---: | ---: |
-| `rg+raw` | 75.0% | 75.0% | 1883 |
-| `rg+ast` | 87.5% | 87.5% | 2171 |
-| `rg+ast+lsp` | 100.0% | 100.0% | 2374 |
+| `rg+raw` | 75.0% | 75.0% | 1694 |
+| `rg+ast` | 87.5% | 87.5% | 1988 |
+| `rg+ast+lsp` | 100.0% | 100.0% | 2191 |
 | `graphify-query` | 87.5% | 100.0% | 589 |
-| `graphify+ast+lsp` raw accumulation | 100.0% | 100.0% | 2663 |
+| `graphify+ast+lsp` raw accumulation | 100.0% | 100.0% | 2480 |
 | compact routed evidence | 100.0% | 100.0% | 451 |
 
 Graphify found the transitive wrapper path with a small result but missed the
 aliased call. LSP supplied that missing semantic edge. AST found the
 structurally equivalent helper. Accumulating all raw outputs cost more than text
 search, while exposing only a compact roots/candidates/delta ledger reduced the
-token proxy by about 76% with full recall and precision.
+token proxy by about 73% with full recall and precision. The benchmark removes
+ripgrep's nondeterministic timing and self-sized fields before scoring; exact
+byte-based proxy values remain specific to this fixture and adapter format.
 
 Treat this as evidence for the routing mechanism, not as a repository-scale
 performance claim. Before making Graphify or LSP a default dependency, repeat
@@ -194,3 +196,10 @@ The provisional routing contract is:
 4. Expose a compact provenance ledger to the model instead of raw tool output.
 5. Fall back to text search and source inspection whenever a capability is
    missing or stale.
+
+The durable experiment record, limitations, and reproduction contract are in
+[`docs/experiments/2026-08-04-code-navigation-tool-routing.md`](experiments/2026-08-04-code-navigation-tool-routing.md).
+The installable operational contract is intentionally separated into
+[`skills/review-response/references/code-navigation.md`](../skills/review-response/references/code-navigation.md)
+so the core skill remains compact while agents can load the routing details at
+the point of use.

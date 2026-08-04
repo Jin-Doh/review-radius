@@ -27,9 +27,20 @@ this checkout.
 ```text
 skills/review-response/  Installable skill
 docs/design.md           Workflow design and acceptance criteria
+docs/experiments/        Durable experiment decisions and limitations
+docs/qa/                 Traceknot completion evidence
 experiments/tool-routing/ Reproducible search-tool comparison
+tests/                    Skill and experiment contract tests
 ```
 
 The installable skill is the operational source of truth. The design document
 explains why the workflow is structured this way and how future changes should
 be evaluated.
+
+## Verify
+
+```sh
+python3 -m unittest discover -s tests -v
+python3 experiments/tool-routing/run_benchmark.py
+npx skills add "$PWD" --list
+```
