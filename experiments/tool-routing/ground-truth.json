@@ -1,0 +1,32 @@
+{
+  "review_seed": {
+    "file": "fixture/src/identity/principal.ts",
+    "symbol": "samePrincipalLoose",
+    "comment": "Principal IDs are canonical and case-sensitive. Audit all consumers and structurally equivalent loose comparisons."
+  },
+  "defect_roots": [
+    {
+      "file": "fixture/src/identity/principal.ts",
+      "symbol": "samePrincipalLoose"
+    },
+    {
+      "file": "fixture/src/identity/account.ts",
+      "symbol": "sameAccountLoose"
+    }
+  ],
+  "affected": [
+    "samePrincipalLoose",
+    "sameAccountLoose",
+    "deletePrincipal",
+    "rotateCredential",
+    "revokeSession",
+    "ownsResource",
+    "readAuditLog",
+    "transferAccount"
+  ],
+  "safe": [
+    "samePrincipalStrict",
+    "readOwnProfile",
+    "searchDirectory"
+  ]
+}

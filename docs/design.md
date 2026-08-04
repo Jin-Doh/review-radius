@@ -152,3 +152,45 @@ The skill is acceptable when it produces the following behavior:
    full architectural analysis.
 5. A real same-class issue outside the safe PR boundary is reported as a
    follow-up instead of being silently fixed or ignored.
+
+## Tool-routing experiment
+
+The initial synthetic TypeScript benchmark is maintained under
+`experiments/tool-routing/`. It models a review against a loose,
+case-insensitive identity comparison with direct calls, an aliased import, a
+re-export, a transitive wrapper caller, a structurally equivalent helper, and
+safe decoys.
+
+The 2026-08-04 run produced these stable candidate results across three
+repetitions:
+
+| Method | Recall | Precision | Token proxy |
+| --- | ---: | ---: | ---: |
+| `rg+raw` | 75.0% | 75.0% | 1877 |
+| `rg+ast` | 87.5% | 87.5% | 2171 |
+| `rg+ast+lsp` | 100.0% | 100.0% | 2374 |
+| `graphify-query` | 87.5% | 100.0% | 589 |
+| `graphify+ast+lsp` raw accumulation | 100.0% | 100.0% | 2663 |
+| compact routed evidence | 100.0% | 100.0% | 451 |
+
+Graphify found the transitive wrapper path with a small result but missed the
+aliased call. LSP supplied that missing semantic edge. AST found the
+structurally equivalent helper. Accumulating all raw outputs cost more than text
+search, while exposing only a compact roots/candidates/delta ledger reduced the
+token proxy by about 76% with full recall and precision.
+
+Treat this as evidence for the routing mechanism, not as a repository-scale
+performance claim. Before making Graphify or LSP a default dependency, repeat
+the experiment against a larger real repository and include stale-index,
+unsupported-language, dynamic-dispatch, and setup-cost cases.
+
+The provisional routing contract is:
+
+1. Use AST to identify structural defect roots.
+2. Query an existing or justified Graphify graph for bounded direct and
+   transitive candidates.
+3. Use LSP to verify semantic relationships and add only candidates absent from
+   the graph result.
+4. Expose a compact provenance ledger to the model instead of raw tool output.
+5. Fall back to text search and source inspection whenever a capability is
+   missing or stale.

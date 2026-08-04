@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "fixture": "case-sensitive identity comparison",
+  "environment": {
+    "python": "3.14.6",
+    "ast_grep": "ast-grep 0.45.0",
+    "typescript_language_server": "5.3.0",
+    "graphify": "graphifyy==0.9.32 via uvx"
+  },
+  "ground_truth": {
+    "review_seed": {
+      "file": "fixture/src/identity/principal.ts",
+      "symbol": "samePrincipalLoose",
+      "comment": "Principal IDs are canonical and case-sensitive. Audit all consumers and structurally equivalent loose comparisons."
+    },
+    "defect_roots": [
+      {
+        "file": "fixture/src/identity/principal.ts",
+        "symbol": "samePrincipalLoose"
+      },
+      {
+        "file": "fixture/src/identity/account.ts",
+        "symbol": "sameAccountLoose"
+      }
+    ],
+    "affected": [
+      "samePrincipalLoose",
+      "sameAccountLoose",
+      "deletePrincipal",
+      "rotateCredential",
+      "revokeSession",
+      "ownsResource",
+      "readAuditLog",
+      "transferAccount"
+    ],
+    "safe": [
+      "samePrincipalStrict",
+      "readOwnProfile",
+      "searchDirectory"
+    ]
+  },
+  "methods": [
+    {
+      "name": "rg+raw",
+      "available": true,
+      "candidates": [
+        "deletePrincipal",
+        "ownsResource",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "samePrincipalStrict",
+        "searchDirectory"
+      ],
+      "true_positive": [
+        "deletePrincipal",
+        "ownsResource",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose"
+      ],
+      "false_positive": [
+        "samePrincipalStrict",
+        "searchDirectory"
+      ],
+      "missed": [
+        "readAuditLog",
+        "transferAccount"
+      ],
+      "precision": 0.75,
+      "recall": 0.75,
+      "tool_bytes": 6151,
+      "source_bytes": 1380,
+      "estimated_tokens": 1883,
+      "elapsed_ms": 16.63,
+      "cold_index_ms": null,
+      "notes": [
+        "Single review-anchor pass; reads every matched file in full."
+      ]
+    },
+    {
+      "name": "rg+ast",
+      "available": true,
+      "candidates": [
+        "deletePrincipal",
+        "ownsResource",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "samePrincipalStrict",
+        "transferAccount"
+      ],
+      "true_positive": [
+        "deletePrincipal",
+        "ownsResource",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "false_positive": [
+        "samePrincipalStrict"
+      ],
+      "missed": [
+        "readAuditLog"
+      ],
+      "precision": 0.875,
+      "recall": 0.875,
+      "tool_bytes": 7291,
+      "source_bytes": 1393,
+      "estimated_tokens": 2171,
+      "elapsed_ms": 33.9,
+      "cold_index_ms": null,
+      "notes": [
+        "AST finds structural defect roots; text search follows each root one hop.",
+        "No semantic alias or transitive call traversal."
+      ]
+    },
+    {
+      "name": "rg+ast+lsp",
+      "available": true,
+      "candidates": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "true_positive": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "false_positive": [],
+      "missed": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "tool_bytes": 8031,
+      "source_bytes": 1464,
+      "estimated_tokens": 2374,
+      "elapsed_ms": 558.21,
+      "cold_index_ms": null,
+      "notes": [
+        "AST supplies defect roots; LSP resolves references and recursive incoming calls.",
+        "Source-read proxy charges five-line windows around returned locations.",
+        "Server advertised call hierarchy: True.",
+        "Raw LSP protocol bytes compacted by adapter: 7910."
+      ]
+    },
+    {
+      "name": "graphify-query",
+      "available": true,
+      "candidates": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "true_positive": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "false_positive": [],
+      "missed": [
+        "rotateCredential"
+      ],
+      "precision": 1.0,
+      "recall": 0.875,
+      "tool_bytes": 1154,
+      "source_bytes": 1200,
+      "estimated_tokens": 589,
+      "elapsed_ms": 146.31,
+      "cold_index_ms": 461.69,
+      "notes": [
+        "Graphify query uses BFS depth two over the code-only directed graph.",
+        "Source-read proxy charges five-line windows around returned graph nodes."
+      ]
+    },
+    {
+      "name": "graphify+ast+lsp",
+      "available": true,
+      "candidates": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "true_positive": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "false_positive": [],
+      "missed": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "tool_bytes": 9185,
+      "source_bytes": 1464,
+      "estimated_tokens": 2663,
+      "elapsed_ms": 704.52,
+      "cold_index_ms": 461.69,
+      "notes": [
+        "Pinned Graphify 0.9.32 runs code-only and locally through uvx.",
+        "Graph query candidates are unioned with AST and LSP evidence.",
+        "Graphify extract output bytes excluded from token proxy: 755."
+      ]
+    },
+    {
+      "name": "routed-compact",
+      "available": true,
+      "candidates": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "true_positive": [
+        "deletePrincipal",
+        "ownsResource",
+        "readAuditLog",
+        "revokeSession",
+        "rotateCredential",
+        "sameAccountLoose",
+        "samePrincipalLoose",
+        "transferAccount"
+      ],
+      "false_positive": [],
+      "missed": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "tool_bytes": 393,
+      "source_bytes": 1411,
+      "estimated_tokens": 451,
+      "elapsed_ms": 704.52,
+      "cold_index_ms": 461.69,
+      "notes": [
+        "AST supplies roots, Graphify supplies the broad candidate set, and LSP supplies only the delta.",
+        "The model sees one compact provenance ledger instead of raw tool protocols."
+      ]
+    }
+  ]
+}

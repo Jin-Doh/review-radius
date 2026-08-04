@@ -27,6 +27,7 @@ this checkout.
 ```text
 skills/review-response/  Installable skill
 docs/design.md           Workflow design and acceptance criteria
+experiments/tool-routing/ Reproducible search-tool comparison
 ```
 
 The installable skill is the operational source of truth. The design document
