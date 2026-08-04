@@ -1,6 +1,6 @@
 # Tool-routing experiment
 
-This experiment compares four candidate-discovery paths for one review-driven
+This experiment compares six candidate-discovery paths for one review-driven
 defect class:
 
 1. `rg` plus full-file reads

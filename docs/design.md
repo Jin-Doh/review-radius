@@ -166,7 +166,7 @@ repetitions:
 
 | Method | Recall | Precision | Token proxy |
 | --- | ---: | ---: | ---: |
-| `rg+raw` | 75.0% | 75.0% | 1877 |
+| `rg+raw` | 75.0% | 75.0% | 1883 |
 | `rg+ast` | 87.5% | 87.5% | 2171 |
 | `rg+ast+lsp` | 100.0% | 100.0% | 2374 |
 | `graphify-query` | 87.5% | 100.0% | 589 |
