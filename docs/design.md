@@ -200,6 +200,6 @@ The provisional routing contract is:
 The durable experiment record, limitations, and reproduction contract are in
 [`docs/experiments/2026-08-04-code-navigation-tool-routing.md`](experiments/2026-08-04-code-navigation-tool-routing.md).
 The installable operational contract is intentionally separated into
-[`skills/review-response/references/code-navigation.md`](../skills/review-response/references/code-navigation.md)
+[`skills/review-radius/references/code-navigation.md`](../skills/review-radius/references/code-navigation.md)
 so the core skill remains compact while agents can load the routing details at
 the point of use.

@@ -1,7 +1,7 @@
 # Review Radius 브랜드 가이드
 
 [English](BRAND.md) · [简体中文](BRAND.zh-CN.md) ·
-[이름·언어 검증](docs/brand/name-and-language-validation.md)
+[이름·언어 체계](docs/brand/naming-and-language.md)
 
 ## 브랜드 아이디어
 
@@ -21,13 +21,13 @@
 | 사용처 | 이름 | 규칙 |
 | --- | --- | --- |
 | 프로젝트·제품 | **Review Radius** | 제목, 설명, 시각 정체성에서 사용합니다. 번역하거나 음역하지 않습니다. |
-| 설치 가능 스킬 | `review-response` | 설치와 `$review-response` 호출의 호환성을 위해 유지합니다. |
-| 저장소 이름 후보 | `review-radius` | 공개 원격 저장소를 만들 때 다시 가용성을 확인합니다. |
+| 저장소·스킬·호출 ID | `review-radius` | 설치 경로, 메타데이터, `$review-radius` 호출에 같은 ID를 사용합니다. |
+| 공개 저장소 | `Jin-Doh/review-radius` | 설치 예시와 공개 링크의 기준으로 사용합니다. |
 | 핵심 개념 | 리뷰 반경 | 제품이 아니라 제한된 점검 범위를 설명할 때만 일반 명사로 씁니다. |
 
 <!-- markdownlint-enable MD013 -->
 
-명시적인 호환성·마이그레이션 계획 없이 스킬 ID를 `review-radius`로 바꾸지
+실제로 배포된 연동을 이전해야 하는 경우가 아니라면 별칭이나 이전 ID를 만들지
 않습니다.
 
 ## 포지셔닝
@@ -65,14 +65,11 @@
 
 심볼과 색상 규칙은 [영문 브랜드 가이드](BRAND.md)의 시각 정체성을 단일
 원본으로 사용합니다. 제품명 **Review Radius**는 모든 언어에서 같은 표기로
-유지하고, 설치 ID는 항상 `review-response`로 씁니다.
+유지하고, 저장소·설치·호출 ID는 모두 `review-radius`로 씁니다.
 
-## 출시 조건
+## 일관성 확인
 
 프로젝트는 루트의 `LICENSE`에 명시된 MIT License로 배포합니다. 모든 언어의
 README에서 해당 파일을 찾을 수 있어야 합니다.
-
-2026-08-04 기준 공개 GitHub와 주요 패키지 레지스트리에서 동일 이름을 찾지
-못했지만, `reviewradius.com`은 이미 등록돼 있습니다. 상표권 충돌 여부는
-확인되지 않았으므로 법적 사용 가능성을 암시하지 않습니다. 자세한 범위와
-근거는 [검증 문서](docs/brand/name-and-language-validation.md)에 있습니다.
+스킬 폴더, frontmatter, 설치 예시, 기본 프롬프트와 테스트는 모두
+`review-radius`를 기준으로 맞춥니다.

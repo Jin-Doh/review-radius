@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "productName": "Review Radius",
-  "skillId": "review-response",
+  "skillId": "review-radius",
   "defaultLocale": "en",
   "locales": {
     "en": {

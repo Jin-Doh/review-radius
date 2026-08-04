@@ -8,8 +8,8 @@
 
 Review Radius 以审查意见为起点，在明确边界内检查相关代码中是否还存在
 由同一原因造成的缺陷。它先验证反馈，再提炼被破坏的不变量，检查相关代码
-范围，最后依据实现状态和验证证据完成审查响应。可安装的技能 ID 仍为
-`review-response`。
+范围，最后依据实现状态和验证证据完成审查响应。仓库、可安装技能和调用 ID
+统一为 `review-radius`。
 
 [English](README.md) · [한국어](README.ko.md) ·
 [设计](docs/design.md) ·
@@ -39,7 +39,7 @@ Review Radius 以审查意见为起点，在明确边界内检查相关代码中
 
 ```sh
 npx skills add https://github.com/Jin-Doh/review-radius \
-  --skill review-response \
+  --skill review-radius \
   --agent codex \
   -y
 ```
@@ -47,10 +47,10 @@ npx skills add https://github.com/Jin-Doh/review-radius \
 本地开发时，可使用当前检出目录：
 
 ```sh
-npx skills add "$PWD" --skill review-response --agent codex -y
+npx skills add "$PWD" --skill review-radius --agent codex -y
 ```
 
-处理 PR 审查反馈时，以 `$review-response` 调用该技能。
+处理 PR 审查反馈时，以 `$review-radius` 调用该技能。
 
 ## 导航策略
 
@@ -76,11 +76,9 @@ Review Radius 不会：
 - 为了让 PR 看起来已清理完毕而关闭含糊或受阻的反馈；
 - 取代仓库测试、CI 或运行时证据。
 
-项目名称为 Review Radius，`review-response` 是保持兼容的技能 ID。公开
-冲突检查未在 GitHub 和主要包注册表中发现同名项目，但
-`reviewradius.com` 已被注册，商标可用性仍未确认。请参阅
-[简体中文品牌指南](BRAND.zh-CN.md)和
-[名称与语言验证记录](docs/brand/name-and-language-validation.md)。
+**Review Radius** 是产品名称；仓库、技能和调用 ID 均为
+`review-radius`。文案与视觉规则见[简体中文品牌指南](BRAND.zh-CN.md)，
+各语言的术语与写法见[名称与语言体系](docs/brand/naming-and-language.md)。
 
 ## 许可证
 

@@ -9,8 +9,8 @@ The maintainer owns roadmap, release, security, and merge decisions.
 
 Changes are evaluated against the documented product boundary: a review comment
 starts a bounded audit of the defect class it reveals. Decisions prioritize
-evidence, compatibility of the `review-response` skill ID, and a reviewable
-scope.
+evidence, the canonical `review-radius` install and invocation contract, and a
+reviewable scope.
 
 ## Review model
 

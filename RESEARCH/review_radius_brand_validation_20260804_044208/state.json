@@ -89,7 +89,7 @@
     "claim_ledger": "artifacts/claim_ledger.jsonl",
     "report": "outputs/report.md",
     "evaluation": "outputs/eval_report.json",
-    "repository_validation": "docs/brand/name-and-language-validation.md"
+    "repository_validation": "docs/brand/naming-and-language.md"
   },
   "report_skeleton": [
     "decision",

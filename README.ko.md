@@ -9,8 +9,8 @@ Codex를 위한 증거 기반 GitHub 리뷰 대응 스킬입니다.
 Review Radius는 리뷰 코멘트를 출발점으로 삼아 같은 원인에서 생긴 결함이
 관련 코드에 더 남아 있는지 범위를 정해 점검합니다. 피드백을 검증하고,
 깨진 불변 조건(invariant)을 도출하고, 관련 코드 영역을 확인한 뒤, 구현과
-검증 결과가 뒷받침될 때 리뷰를 마무리합니다. 설치 가능한 스킬 ID는 기존과
-동일한 `review-response`입니다.
+검증 결과가 뒷받침될 때 리뷰를 마무리합니다. 저장소와 설치 가능한 스킬,
+호출 ID는 모두 `review-radius`입니다.
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [설계](docs/design.md) ·
 [실험](docs/experiments/2026-08-04-code-navigation-tool-routing.md) ·
@@ -19,8 +19,8 @@ Review Radius는 리뷰 코멘트를 출발점으로 삼아 같은 원인에서 
 ## 왜 Review Radius인가
 
 리뷰어는 대개 가장 먼저 드러난 증상을 가리킵니다. 지적된 한 줄만 수정하면
-같은 결함이 형제 구현, alias caller, 실패 경로, 설정 변형이나 테스트에 남을
-수 있습니다.
+같은 결함이 나란히 존재하는 구현, 별칭을 거치는 호출부, 실패 경로, 설정
+변형이나 테스트에 남을 수 있습니다.
 
 ![리뷰 코멘트가 결함군 탐색, 제한된 점검, 증거 기반 수정으로 이어지는 과정](assets/readme/review-radius-workflow.png)
 
@@ -40,28 +40,28 @@ Review Radius는 리뷰 코멘트를 출발점으로 삼아 같은 원인에서 
 
 ```sh
 npx skills add https://github.com/Jin-Doh/review-radius \
-  --skill review-response \
+  --skill review-radius \
   --agent codex \
   -y
 ```
 
-로컬 checkout에서는 다음과 같이 설치할 수 있습니다.
+로컬 체크아웃에서는 다음과 같이 설치할 수 있습니다.
 
 ```sh
-npx skills add "$PWD" --skill review-response --agent codex -y
+npx skills add "$PWD" --skill review-radius --agent codex -y
 ```
 
-PR 리뷰 대응 시 `$review-response`로 호출합니다.
+PR 리뷰 대응 시 `$review-radius`로 호출합니다.
 
 ## 탐색 전략
 
 질문에 따라 도구를 선택하며 모든 도구를 기계적으로 실행하지 않습니다.
 
-- literal과 설정은 `rg`;
+- 문자열과 설정은 `rg`;
 - 구문 구조가 같은 코드는 AST;
-- symbol, alias, 구현과 caller는 LSP;
-- 제한된 직접·전이 관계는 최신 code graph;
-- 동적 동작은 집중 테스트나 runtime 관찰로 확인합니다.
+- 심볼·별칭·구현·호출부는 LSP;
+- 제한된 직접·전이 관계는 최신 코드 그래프;
+- 동적 동작은 집중 테스트나 런타임 관찰로 확인합니다.
 
 합성 TypeScript 픽스처에서는 압축 라우팅이 재현율과 정밀도 100%, 토큰
 대용치 451을 기록했습니다. 이는 라우팅 메커니즘에 대한 증거이며 실제 대형
@@ -72,17 +72,15 @@ PR 리뷰 대응 시 `$review-response`로 호출합니다.
 Review Radius는 다음을 하지 않습니다.
 
 - 하나의 코멘트를 일반적인 리팩터링으로 확대하지 않습니다.
-- 텍스트 유사성이나 추론된 graph edge만으로 결함을 확정하지 않습니다.
+- 텍스트 유사성이나 추론된 그래프 관계만으로 결함을 확정하지 않습니다.
 - 하나의 검색 도구로 탐색 완전성을 주장하지 않습니다.
 - 모호하거나 차단된 리뷰를 PR을 깨끗하게 보이게 하려고 닫지 않습니다.
-- 저장소 테스트, CI 또는 runtime 증거를 대체하지 않습니다.
+- 저장소 테스트, CI 또는 런타임 증거를 대체하지 않습니다.
 
-프로젝트 이름은 Review Radius이며 `review-response`는 호환성을 유지하는
-스킬 ID입니다. GitHub와 주요 패키지 레지스트리의 공개 충돌 점검에서는
-동일 이름을 찾지 못했지만, `reviewradius.com`은 이미 등록돼 있고 상표 사용
-가능성은 확인되지 않았습니다. 자세한 메시지와 시각 규칙은
-[한국어 브랜드 가이드](BRAND.ko.md), 근거와 출시 조건은
-[이름·언어 검증 문서](docs/brand/name-and-language-validation.md)에 있습니다.
+**Review Radius**는 제품 이름이고, 저장소·스킬·호출 ID는 모두
+`review-radius`입니다. 문체와 시각 규칙은
+[한국어 브랜드 가이드](BRAND.ko.md), 언어별 용어와 표기 원칙은
+[이름·언어 체계](docs/brand/naming-and-language.md)를 참고하세요.
 
 ## 라이선스
 
@@ -93,5 +91,5 @@ Apache License 2.0입니다. 원본 라이선스와 저작자 표시, 사용 범
 
 ## 기여와 보안
 
-1인 maintainer를 고려한 PR 정책은 [CONTRIBUTING.md](CONTRIBUTING.md), 비공개
+1인 메인테이너를 고려한 PR 정책은 [CONTRIBUTING.md](CONTRIBUTING.md), 비공개
 취약점 신고 방법은 [SECURITY.md](SECURITY.md)를 참고하세요.

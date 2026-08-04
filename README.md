@@ -4,12 +4,12 @@
 
 **Fix the pattern behind the comment.**
 
-An evidence-driven GitHub review-response skill for Codex.
+An evidence-driven GitHub PR review skill for Codex.
 
 Review Radius turns a review comment into a bounded audit of the defect class it
 reveals. It validates the feedback, derives the violated invariant, checks
 credible related surfaces, and closes the review with evidence. The installable
-skill ID remains `review-response`.
+skill, command, and repository share one name: `review-radius`.
 
 [한국어](README.ko.md) · [简体中文](README.zh-CN.md) ·
 [Design](docs/design.md) ·
@@ -63,7 +63,7 @@ Install Review Radius for Codex:
 
 ```sh
 npx skills add https://github.com/Jin-Doh/review-radius \
-  --skill review-response \
+  --skill review-radius \
   --agent codex \
   -y
 ```
@@ -71,10 +71,10 @@ npx skills add https://github.com/Jin-Doh/review-radius \
 For local development, use the checkout path:
 
 ```sh
-npx skills add "$PWD" --skill review-response --agent codex -y
+npx skills add "$PWD" --skill review-radius --agent codex -y
 ```
 
-Then invoke it as `$review-response` when handling PR feedback.
+Then invoke it as `$review-radius` when handling PR feedback.
 
 ## Evidence-backed navigation
 
@@ -104,7 +104,7 @@ Review Radius does not:
 ## Repository layout
 
 ```text
-skills/review-response/   Installable skill and operational references
+skills/review-radius/   Installable skill and operational references
 docs/design.md            Workflow design and acceptance scenarios
 docs/experiments/         Durable experiment decisions and limitations
 docs/qa/                  Traceknot completion evidence
@@ -127,13 +127,10 @@ npx skills add "$PWD" --list
 
 ## Brand
 
-Review Radius is the project and product name. `review-response` is the stable
-skill ID and command-facing identity. The public collision screen found a clear
-GitHub and package-registry path, but `reviewradius.com` is already registered
-and trademark clearance remains unresolved. See [BRAND.md](BRAND.md) for the
-identity system and
-[name and language validation](docs/brand/name-and-language-validation.md) for
-the evidence and launch constraints.
+**Review Radius** is the product name; `review-radius` is the repository, skill,
+and command ID. See the [brand guide](BRAND.md) for voice and visual rules and
+the [naming and language system](docs/brand/naming-and-language.md) for locale
+and terminology decisions.
 
 ## License
 

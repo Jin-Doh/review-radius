@@ -502,7 +502,7 @@ def graphify_search(
         return unavailable, combined, routed
 
     graphify = ["uvx", "--from", "graphifyy==0.9.32", "graphify"]
-    with tempfile.TemporaryDirectory(prefix="review-response-graphify-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="review-radius-graphify-") as temp_dir:
         graph_fixture = Path(temp_dir)
         shutil.copytree(SOURCE, graph_fixture / "src")
         shutil.copy2(FIXTURE / "tsconfig.json", graph_fixture / "tsconfig.json")

@@ -1,5 +1,9 @@
 # MIT license and repository validation
 
+> Historical record: this report predates the canonical `review-radius` skill
+> identity. Mentions of `review-response` describe the contract that was tested
+> at the time and do not define a current compatibility alias.
+
 Date: 2026-08-04  
 Implementation snapshot: `5cb63e697daba9b44fd78b453e9c4c7eeace68d8`  
 QA method: Traceknot evidence-bound repository verification
