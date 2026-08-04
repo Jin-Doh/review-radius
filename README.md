@@ -2,7 +2,7 @@
 
 ![Review Radius mark](assets/review-radius-mark.svg)
 
-**Fix the pattern, not just the comment.**
+**Fix the pattern behind the comment.**
 
 An evidence-driven GitHub review-response skill for Codex.
 
@@ -11,7 +11,8 @@ reveals. It validates the feedback, derives the violated invariant, checks
 credible related surfaces, and closes the review with evidence. The installable
 skill ID remains `review-response`.
 
-[한국어](README.ko.md) · [Design](docs/design.md) ·
+[한국어](README.ko.md) · [简体中文](README.zh-CN.md) ·
+[Design](docs/design.md) ·
 [Experiment](docs/experiments/2026-08-04-code-navigation-tool-routing.md) ·
 [Brand guide](BRAND.md)
 
@@ -137,5 +138,9 @@ npx skills add "$PWD" --list
 ## Brand
 
 Review Radius is the project and product name. `review-response` is the stable
-skill ID and command-facing identity. See [BRAND.md](BRAND.md) for positioning,
-voice, visual tokens, and naming rules.
+skill ID and command-facing identity. The public collision screen found a clear
+GitHub and package-registry path, but `reviewradius.com` is already registered
+and trademark clearance remains unresolved. See [BRAND.md](BRAND.md) for the
+identity system and
+[name and language validation](docs/brand/name-and-language-validation.md) for
+the evidence and launch constraints.

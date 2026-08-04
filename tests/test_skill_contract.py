@@ -13,7 +13,12 @@ EXPERIMENT = ROOT / "docs/experiments/2026-08-04-code-navigation-tool-routing.md
 RESULTS = ROOT / "experiments/tool-routing/results/latest.json"
 README = ROOT / "README.md"
 README_KO = ROOT / "README.ko.md"
+README_ZH_CN = ROOT / "README.zh-CN.md"
 BRAND = ROOT / "BRAND.md"
+BRAND_KO = ROOT / "BRAND.ko.md"
+BRAND_ZH_CN = ROOT / "BRAND.zh-CN.md"
+BRAND_MESSAGES = ROOT / "brand/messages.json"
+BRAND_VALIDATION = ROOT / "docs/brand/name-and-language-validation.md"
 MARK = ROOT / "assets/review-radius-mark.svg"
 OPENAI = ROOT / "skills/review-response/agents/openai.yaml"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
@@ -28,11 +33,40 @@ class SkillContractTest(unittest.TestCase):
         openai = OPENAI.read_text()
 
         self.assertIn("# Review Radius", skill)
-        self.assertIn("Fix the pattern, not just the comment.", readme)
+        self.assertIn("Fix the pattern behind the comment.", readme)
         self.assertIn("`review-response`", brand)
         self.assertIn("name: review-response", skill)
         self.assertIn("Review Radius", openai)
         self.assertTrue(README_KO.is_file())
+
+    def test_brand_locales_are_complete_and_match_the_message_registry(self):
+        messages = json.loads(BRAND_MESSAGES.read_text())
+        self.assertEqual(set(messages["locales"]), {"en", "ko", "zh-CN"})
+        self.assertEqual(messages["skillId"], "review-response")
+
+        for locale, config in messages["locales"].items():
+            with self.subTest(locale=locale):
+                readme = ROOT / config["readme"]
+                brand_guide = ROOT / config["brandGuide"]
+                self.assertTrue(readme.is_file())
+                self.assertTrue(brand_guide.is_file())
+                self.assertIn(config["primaryLine"], readme.read_text())
+                self.assertIn(config["primaryLine"], brand_guide.read_text())
+
+        self.assertEqual(messages["locales"]["zh-CN"]["script"], "Hans")
+        self.assertEqual(messages["locales"]["zh-CN"]["region"], "CN")
+
+    def test_language_navigation_and_validation_boundaries_are_visible(self):
+        for path in (README, README_KO, README_ZH_CN):
+            text = path.read_text()
+            for target in ("README.md", "README.ko.md", "README.zh-CN.md"):
+                if path.name != target:
+                    self.assertIn(target, text)
+
+        validation = BRAND_VALIDATION.read_text()
+        self.assertIn("reviewradius.com", validation)
+        self.assertIn("Trademark availability is unresolved", validation)
+        self.assertIn("`zh-CN`, not `Zn`", validation)
 
     def test_brand_mark_is_valid_accessible_svg(self):
         root = ET.parse(MARK).getroot()

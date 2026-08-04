@@ -1,0 +1,152 @@
+[
+  {
+    "claim_id": "clm_001",
+    "text": "No public GitHub repository with the exact names review-radius or ReviewRadius was returned by the observed exact-name searches on 2026-08-04.",
+    "risk": "normal",
+    "claim_type": "executable",
+    "source_ids": [
+      "src_github_api"
+    ],
+    "counter_search": "Also searched the spaced phrase Review Radius in repository names and descriptions; one unrelated description result appeared, not an exact repository name.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "execution_proof": {
+      "script": "gh api -X GET search/repositories -f q='review-radius in:name' and variants",
+      "output": "exact repository-name matches: 0",
+      "env": "GitHub REST API via gh on macOS, observed 2026-08-04",
+      "verdict": "confirmed"
+    },
+    "status": "verified",
+    "status_reason": "실행 검증 통과 (execution_proof.verdict=confirmed)"
+  },
+  {
+    "claim_id": "clm_002",
+    "text": "No exact review-radius or reviewradius package was observed on npm, PyPI, crates.io, or RubyGems on 2026-08-04.",
+    "risk": "normal",
+    "claim_type": "executable",
+    "source_ids": [
+      "src_npm",
+      "src_pypi",
+      "src_crates",
+      "src_rubygems"
+    ],
+    "counter_search": "Queried hyphenated and unhyphenated variants where exact endpoints or query APIs permitted.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "execution_proof": {
+      "script": "curl exact package endpoints and crates.io search API with an explicit User-Agent",
+      "output": "npm 404; PyPI 404; crates total 0; RubyGems 404",
+      "env": "curl on macOS, observed 2026-08-04",
+      "verdict": "confirmed"
+    },
+    "status": "verified",
+    "status_reason": "실행 검증 통과 (execution_proof.verdict=confirmed)"
+  },
+  {
+    "claim_id": "clm_003",
+    "text": "reviewradius.com was already registered when checked on 2026-08-04, with a registry registration event dated 2019-08-06.",
+    "risk": "high",
+    "claim_type": "executable",
+    "source_ids": [
+      "src_verisign_rdap"
+    ],
+    "counter_search": "Checked HTTPS behavior and DNS in addition to RDAP; site reachability did not disprove the registry record and is not used to infer ownership or active product use.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "execution_proof": {
+      "script": "curl Verisign .com RDAP for reviewradius.com",
+      "output": "HTTP 200; registration event 2019-08-06; expiration event 2027-08-06",
+      "env": "Verisign RDAP via curl on macOS, observed 2026-08-04",
+      "verdict": "confirmed"
+    },
+    "status": "verified",
+    "status_reason": "실행 검증 통과 (execution_proof.verdict=confirmed)"
+  },
+  {
+    "claim_id": "clm_004",
+    "text": "The word radius supports a bounded-search metaphor because it denotes distance from a center and can denote a bounded or circumscribed area.",
+    "risk": "normal",
+    "claim_type": "descriptive",
+    "source_ids": [
+      "src_merriam_radius",
+      "src_cambridge_radius"
+    ],
+    "counter_search": "Checked whether the common senses imply unrestricted reach; the cited definitions instead center the concept on a measurable boundary around a point.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": false,
+    "valid_at": "2026-08-04",
+    "status": "verified",
+    "status_reason": "ok"
+  },
+  {
+    "claim_id": "clm_005",
+    "text": "zh-CN is a valid conventional BCP 47-style tag for Chinese as used in mainland China; Zn is not the corresponding language subtag.",
+    "risk": "normal",
+    "claim_type": "descriptive",
+    "source_ids": [
+      "src_w3c_tags",
+      "src_rfc5646",
+      "src_iana_registry"
+    ],
+    "counter_search": "Checked the script-specific alternative zh-Hans; it is useful when script rather than region is the target, while this repository explicitly targets mainland Simplified Chinese copy.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "status": "verified",
+    "status_reason": "ok"
+  },
+  {
+    "claim_id": "clm_006",
+    "text": "GitHub code search returned no exact match for either the old English tagline or the selected English tagline when observed on 2026-08-04.",
+    "risk": "normal",
+    "claim_type": "executable",
+    "source_ids": [
+      "src_github_api"
+    ],
+    "counter_search": "Searched both quoted phrases independently; this checks public GitHub code only and does not establish trademark or web-wide uniqueness.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "execution_proof": {
+      "script": "gh api -X GET search/code with each exact quoted tagline",
+      "output": "Fix the pattern, not just the comment.: 0; Fix the pattern behind the comment.: 0",
+      "env": "GitHub REST API via gh on macOS, observed 2026-08-04",
+      "verdict": "confirmed"
+    },
+    "status": "verified",
+    "status_reason": "실행 검증 통과 (execution_proof.verdict=confirmed)"
+  },
+  {
+    "claim_id": "clm_008",
+    "text": "GitHub's localized review documentation supplies observed terminology anchors for English, Korean, and Simplified Chinese brand copy.",
+    "risk": "normal",
+    "claim_type": "executable",
+    "source_ids": [
+      "src_github_en_review",
+      "src_github_ko_review",
+      "src_github_zh_review"
+    ],
+    "counter_search": "Compared the three official locale pages; wording differs by locale, so the brand copy uses semantic localization rather than literal word-for-word translation.",
+    "counter_refuted": false,
+    "conflicting": false,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "execution_proof": {
+      "script": "Fetch the redirected GitHub pull-request review reference in en, ko, and zh and inspect its localized terminology",
+      "output": "en: review/reviewer/feedback/comment; ko: 검토/검토자/피드백/주석; zh: 审查/评审/审阅者/反馈/评论",
+      "env": "GitHub Docs via curl on macOS, observed 2026-08-04",
+      "verdict": "confirmed"
+    },
+    "status": "verified",
+    "status_reason": "실행 검증 통과 (execution_proof.verdict=confirmed)"
+  }
+]

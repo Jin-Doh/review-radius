@@ -1,0 +1,114 @@
+{
+  "session_id": "review_radius_brand_validation_20260804_044208",
+  "topic": "Review Radius brand collision, semantic fitness, and EN-KO-zh-CN localization validation",
+  "created_at": "2026-08-04T04:42:08Z",
+  "updated_at": "2026-08-04T05:05:00Z",
+  "status": "COMPLETED",
+  "current_phase": 7,
+  "exec_mode": "single-context",
+  "access_layer": "builtin-fallback",
+  "requirements": {
+    "focus": [
+      "name and tagline collision",
+      "English semantic fitness",
+      "Korean naturalness and equivalence",
+      "Simplified Chinese naturalness and equivalence",
+      "repository localization completeness"
+    ],
+    "output_format": "modular_documents",
+    "scope": {
+      "temporal": "current as of 2026-08-04",
+      "geographic": "global with EN, KO, and zh-CN surfaces",
+      "exclusions": [
+        "legal trademark clearance opinion",
+        "domain purchase",
+        "repository rename",
+        "skill ID migration"
+      ]
+    },
+    "sources": {
+      "required_types": [
+        "official standards",
+        "official platform documentation",
+        "public code and package registries",
+        "official trademark search surfaces"
+      ],
+      "min_quality": "B"
+    },
+    "audience": "open-source maintainers and coding-agent users",
+    "special_requirements": [
+      "preserve review-response skill ID",
+      "provide EN, KO, and zh-CN brand surfaces",
+      "distinguish preliminary collision search from legal clearance"
+    ]
+  },
+  "plan": {
+    "subtopics": [
+      "exact and confusingly similar identity collisions",
+      "English name and tagline semantics",
+      "Korean brand language",
+      "Simplified Chinese brand language",
+      "localization architecture and consistency gates"
+    ],
+    "search_queries": {
+      "identity": [
+        "Review Radius exact name GitHub npm PyPI crates 2026",
+        "Review Radius trademark 2026",
+        "ReviewRadius software code review 2026"
+      ],
+      "english": [
+        "radius definition scope extent English 2026",
+        "fix the pattern behind the comment exact phrase 2026"
+      ],
+      "korean": [
+        "GitHub code review Korean terminology 리뷰 코멘트 검토 2026",
+        "결함 패턴 리뷰가 드러낸 표현 2026"
+      ],
+      "zh_cn": [
+        "GitHub 简体中文 pull request review terminology 代码审查 2026",
+        "缺陷模式 审查意见 Chinese developer terminology 2026"
+      ],
+      "localization": [
+        "BCP 47 zh-CN zh-Hans language tag official 2026",
+        "GitHub README language localization convention zh-CN 2026"
+      ]
+    },
+    "agent_assignments": []
+  },
+  "progress": {
+    "phase_1": "completed",
+    "phase_2": "completed",
+    "phase_3": "completed",
+    "phase_4": "completed",
+    "phase_5": "completed",
+    "phase_6": "completed",
+    "phase_7": "completed"
+  },
+  "sources_count": 16,
+  "artifacts": {
+    "claim_ledger": "artifacts/claim_ledger.jsonl",
+    "report": "outputs/report.md",
+    "evaluation": "outputs/eval_report.json",
+    "repository_validation": "docs/brand/name-and-language-validation.md"
+  },
+  "report_skeleton": [
+    "decision",
+    "collision screen",
+    "language architecture",
+    "confidence",
+    "refuted",
+    "unresolved"
+  ],
+  "errors": [
+    "The orchestrator --help path unexpectedly created a default-topic session; it was removed and not used."
+  ],
+  "verification": {
+    "passed": true,
+    "signature": "af6e87bdfd9d1da9365e2105bdcc17a6fd87cc4b055f80abfbc310b167886040",
+    "verified_count": 7,
+    "unresolved_count": 1,
+    "refuted_count": 0,
+    "checked_at": "2026-08-04T05:01:04.135808+00:00",
+    "checker": "validate_ledger.py"
+  }
+}

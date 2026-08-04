@@ -1,0 +1,52 @@
+{
+  "method": "sequential primary-source-first retrieval with registry execution proofs",
+  "subtopics": [
+    {
+      "id": "identity",
+      "questions": [
+        "Does Review Radius collide with an active software or code-review identity?",
+        "Are exact package or repository names occupied?",
+        "What remains unresolved without counsel-led trademark clearance?"
+      ],
+      "source_types": ["registries", "official trademark search surfaces"],
+      "priority": 1
+    },
+    {
+      "id": "english",
+      "questions": [
+        "Does Review Radius accurately imply bounded related-surface inspection?",
+        "Is the current tagline idiomatic and semantically accurate?"
+      ],
+      "source_types": ["dictionaries", "corpus-style exact searches"],
+      "priority": 1
+    },
+    {
+      "id": "korean",
+      "questions": [
+        "Does the Korean copy preserve the product promise naturally?",
+        "Which technical terms should remain English or be localized?"
+      ],
+      "source_types": ["official localized platform documentation", "terminology searches"],
+      "priority": 1
+    },
+    {
+      "id": "zh_cn",
+      "questions": [
+        "Does Simplified Chinese use natural code-review terminology?",
+        "Which tagline preserves defect-pattern and bounded-scope meaning?"
+      ],
+      "source_types": ["official localized platform documentation", "terminology searches"],
+      "priority": 1
+    },
+    {
+      "id": "localization",
+      "questions": [
+        "Which language tag and filename should represent Simplified Chinese?",
+        "Which brand surfaces must exist in all three languages?"
+      ],
+      "source_types": ["IETF and W3C standards", "repository contract tests"],
+      "priority": 1
+    }
+  ],
+  "stop_rule": "Stop after every material identity or localization claim has a primary source or is explicitly unresolved, and a counter-search yields no new material partition."
+}

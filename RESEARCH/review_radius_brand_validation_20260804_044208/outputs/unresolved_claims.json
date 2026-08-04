@@ -1,0 +1,19 @@
+[
+  {
+    "claim_id": "clm_007",
+    "text": "A lawyer-issued clearance letter exists.",
+    "risk": "high",
+    "claim_type": "legal",
+    "source_ids": [
+      "src_uspto_search",
+      "src_wipo_branddb"
+    ],
+    "counter_search": "Reached the official USPTO search application, but the WIPO search was blocked by an ALTCHA challenge; no jurisdiction-complete similarity, class, or common-law search was performed.",
+    "counter_refuted": false,
+    "conflicting": true,
+    "primary_source": true,
+    "valid_at": "2026-08-04",
+    "status": "unresolved",
+    "status_reason": "출처 간 충돌 미해소"
+  }
+]

@@ -1,4 +1,4 @@
 interface:
   display_name: "Review Radius · 리뷰 대응"
-  short_description: "코멘트가 드러낸 결함 패턴을 제한된 범위에서 점검합니다."
+  short_description: "리뷰가 드러낸 동종 결함을 근거가 확인된 범위까지 추적합니다."
   default_prompt: "Use $review-response to address this PR feedback, audit the same defect class, and verify the bounded fix."

@@ -5,7 +5,7 @@ description: Review Radius is evidence-driven GitHub PR review response. Use whe
 
 # Review Radius
 
-Fix the pattern, not just the comment. Handle GitHub review feedback end to end
+Fix the pattern behind the comment. Handle GitHub review feedback end to end
 by treating each comment as evidence of a potential defect class, not as an
 exhaustive boundary. Keep the review radius bounded by the validated root cause
 and authorized PR scope.

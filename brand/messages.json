@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "productName": "Review Radius",
+  "skillId": "review-response",
+  "defaultLocale": "en",
+  "locales": {
+    "en": {
+      "languageName": "English",
+      "primaryLine": "Fix the pattern behind the comment.",
+      "oneSentence": "Review Radius is an evidence-driven skill that finds and fixes the defect class a review comment reveals.",
+      "shortDescription": "An evidence-driven skill that finds and fixes the defect class a review comment reveals.",
+      "readme": "README.md",
+      "brandGuide": "BRAND.md"
+    },
+    "ko": {
+      "languageName": "한국어",
+      "primaryLine": "리뷰가 드러낸 결함 패턴까지 고치세요.",
+      "oneSentence": "Review Radius는 리뷰 코멘트가 드러낸 동종 결함을 근거가 확인된 범위까지 추적하고 수정하는 PR 리뷰 대응 스킬입니다.",
+      "shortDescription": "리뷰가 드러낸 동종 결함을 근거가 확인된 범위까지 추적합니다.",
+      "readme": "README.ko.md",
+      "brandGuide": "BRAND.ko.md"
+    },
+    "zh-CN": {
+      "languageName": "简体中文",
+      "script": "Hans",
+      "region": "CN",
+      "primaryLine": "修复审查意见所揭示的同类缺陷。",
+      "oneSentence": "Review Radius 是一项以证据为依据的 PR 审查反馈处理技能，用于追踪并修复审查意见所揭示的同类缺陷。",
+      "shortDescription": "追踪并修复审查意见所揭示的同类缺陷。",
+      "readme": "README.zh-CN.md",
+      "brandGuide": "BRAND.zh-CN.md"
+    }
+  }
+}
