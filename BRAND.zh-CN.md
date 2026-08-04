@@ -1,7 +1,7 @@
 # Review Radius 品牌指南
 
 [English](BRAND.md) · [한국어](BRAND.ko.md) ·
-[名称与语言验证](docs/brand/name-and-language-validation.md)
+[名称与语言体系](docs/brand/naming-and-language.md)
 
 ## 品牌理念
 
@@ -20,14 +20,13 @@
 | 使用场景 | 名称 | 规则 |
 | --- | --- | --- |
 | 项目与产品 | **Review Radius** | 用于标题、产品说明和视觉识别；不翻译、不音译。 |
-| 可安装技能 | `review-response` | 为安装与 `$review-response` 调用保持兼容。 |
-| 建议仓库名 | `review-radius` | 创建公开远程仓库时再次确认可用性。 |
+| 仓库、技能与调用 ID | `review-radius` | 安装路径、元数据和 `$review-radius` 调用统一使用该 ID。 |
+| 公开仓库 | `Jin-Doh/review-radius` | 作为安装示例与公开链接的唯一地址。 |
 | 核心概念 | 审查半径 | 仅在说明有边界的检查范围时作为普通概念使用。 |
 
 <!-- markdownlint-enable MD013 -->
 
-除非已有明确的兼容与迁移方案，否则不得把技能 ID 改为
-`review-radius`。
+除非需要迁移已经发布的集成，否则不要引入别名或旧 ID。
 
 ## 定位
 
@@ -60,14 +59,12 @@
 ## 视觉与命名
 
 标志、颜色和留白规则以[英文品牌指南](BRAND.md)为唯一视觉规范。
-所有语言都保留产品名 **Review Radius**，安装技能 ID 始终写作
-`review-response`。
+所有语言都保留产品名 **Review Radius**；仓库、安装技能与调用 ID 均写作
+`review-radius`。
 
-## 发布条件
+## 一致性检查
 
 本项目依据根目录 `LICENSE` 中的 MIT License 发布。所有语言版本的 README
 都必须提供该文件的链接。
-
-截至 2026-08-04，公开 GitHub 与所检查的主要包注册表未发现同名项目；
-但 `reviewradius.com` 已被注册，商标冲突情况仍未解决。因此不得暗示该名称
-已经完成法律清查。范围与依据见[验证记录](docs/brand/name-and-language-validation.md)。
+技能目录、frontmatter、安装示例、默认提示词与测试必须统一使用
+`review-radius`。

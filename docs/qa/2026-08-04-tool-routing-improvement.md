@@ -2,6 +2,10 @@
 
 # Traceknot completion report: tool-routing improvement
 
+> Historical record: this report predates the canonical `review-radius` skill
+> identity. Mentions of `review-response` describe the package tested at the
+> time and do not define a current compatibility alias.
+
 Date: 2026-08-04
 
 ## 1. Target snapshot and change scope

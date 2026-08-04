@@ -8,8 +8,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILL = ROOT / "skills/review-response/SKILL.md"
-NAVIGATION = ROOT / "skills/review-response/references/code-navigation.md"
+SKILL = ROOT / "skills/review-radius/SKILL.md"
+NAVIGATION = ROOT / "skills/review-radius/references/code-navigation.md"
 EXPERIMENT = ROOT / "docs/experiments/2026-08-04-code-navigation-tool-routing.md"
 RESULTS = ROOT / "experiments/tool-routing/results/latest.json"
 README = ROOT / "README.md"
@@ -19,21 +19,25 @@ BRAND = ROOT / "BRAND.md"
 BRAND_KO = ROOT / "BRAND.ko.md"
 BRAND_ZH_CN = ROOT / "BRAND.zh-CN.md"
 BRAND_MESSAGES = ROOT / "brand/messages.json"
-BRAND_VALIDATION = ROOT / "docs/brand/name-and-language-validation.md"
+BRAND_NAMING = ROOT / "docs/brand/naming-and-language.md"
+BRAND_RESEARCH_STATE = (
+    ROOT / "RESEARCH/review_radius_brand_validation_20260804_044208/state.json"
+)
 RULESET = ROOT / ".github/rulesets/main.json"
 QUALITY_WORKFLOW = ROOT / ".github/workflows/quality.yml"
 CODEOWNERS = ROOT / ".github/CODEOWNERS"
 MARK = ROOT / "assets/review-radius-mark.svg"
 HERO = ROOT / "assets/readme/review-radius-hero.png"
 WORKFLOW_VISUAL = ROOT / "assets/readme/review-radius-workflow.png"
-OPENAI = ROOT / "skills/review-response/agents/openai.yaml"
+OPENAI = ROOT / "skills/review-radius/agents/openai.yaml"
 LICENSE = ROOT / "LICENSE"
+THIRD_PARTY_NOTICES = ROOT / "THIRD_PARTY_NOTICES.md"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
 from run_benchmark import normalize_rg_output  # noqa: E402
 
 
 class SkillContractTest(unittest.TestCase):
-    def test_brand_contract_preserves_the_stable_skill_identity(self):
+    def test_brand_contract_uses_one_canonical_skill_identity(self):
         skill = SKILL.read_text()
         readme = README.read_text()
         brand = BRAND.read_text()
@@ -41,15 +45,15 @@ class SkillContractTest(unittest.TestCase):
 
         self.assertIn("# Review Radius", skill)
         self.assertIn("Fix the pattern behind the comment.", readme)
-        self.assertIn("`review-response`", brand)
-        self.assertIn("name: review-response", skill)
+        self.assertIn("`review-radius`", brand)
+        self.assertIn("name: review-radius", skill)
         self.assertIn("Review Radius", openai)
         self.assertTrue(README_KO.is_file())
 
     def test_brand_locales_are_complete_and_match_the_message_registry(self):
         messages = json.loads(BRAND_MESSAGES.read_text())
         self.assertEqual(set(messages["locales"]), {"en", "ko", "zh-CN"})
-        self.assertEqual(messages["skillId"], "review-response")
+        self.assertEqual(messages["skillId"], "review-radius")
 
         for locale, config in messages["locales"].items():
             with self.subTest(locale=locale):
@@ -63,17 +67,69 @@ class SkillContractTest(unittest.TestCase):
         self.assertEqual(messages["locales"]["zh-CN"]["script"], "Hans")
         self.assertEqual(messages["locales"]["zh-CN"]["region"], "CN")
 
-    def test_language_navigation_and_validation_boundaries_are_visible(self):
+    def test_language_navigation_and_naming_boundaries_are_visible(self):
         for path in (README, README_KO, README_ZH_CN):
             text = path.read_text()
             for target in ("README.md", "README.ko.md", "README.zh-CN.md"):
                 if path.name != target:
                     self.assertIn(target, text)
 
-        validation = BRAND_VALIDATION.read_text()
-        self.assertIn("reviewradius.com", validation)
-        self.assertIn("Trademark availability is unresolved", validation)
-        self.assertIn("`zh-CN`, not `Zn`", validation)
+        naming = BRAND_NAMING.read_text()
+        self.assertIn("`zh-CN`, not `Zn`", naming)
+        self.assertIn("Skill folder and frontmatter", naming)
+        self.assertIn("working records", naming)
+        self.assertIn("product introduction", naming)
+
+        prohibited_product_copy = (
+            "reviewradius.com",
+            "public collision screen",
+            "공개 충돌 점검",
+            "公开冲突检查",
+            "trademark clearance remains unresolved",
+        )
+        for path in (
+            README,
+            README_KO,
+            README_ZH_CN,
+            BRAND,
+            BRAND_KO,
+            BRAND_ZH_CN,
+        ):
+            with self.subTest(path=path.name):
+                text = path.read_text()
+                for phrase in prohibited_product_copy:
+                    self.assertNotIn(phrase, text)
+
+    def test_active_surfaces_do_not_expose_a_legacy_skill_alias(self):
+        legacy_id = "review" + "-response"
+        active_paths = (
+            README,
+            README_KO,
+            README_ZH_CN,
+            BRAND,
+            BRAND_KO,
+            BRAND_ZH_CN,
+            BRAND_MESSAGES,
+            SKILL,
+            OPENAI,
+            ROOT / ".github/ISSUE_TEMPLATE/feature_request.yml",
+        )
+        for path in active_paths:
+            with self.subTest(path=path):
+                self.assertNotIn(legacy_id, path.read_text())
+
+        self.assertFalse((ROOT / "skills" / legacy_id).exists())
+
+    def test_historical_brand_validation_remains_bound_to_its_snapshot(self):
+        state = json.loads(BRAND_RESEARCH_STATE.read_text())
+        artifact_path = ROOT / state["artifacts"]["repository_validation"]
+        artifact = artifact_path.read_text()
+
+        self.assertTrue(artifact_path.is_file())
+        self.assertIn("Observed: 2026-08-04", artifact)
+        self.assertIn("preserve\n`review-response`", artifact)
+        self.assertIn("## Collision screen", artifact)
+        self.assertNotEqual(artifact_path, BRAND_NAMING)
 
     def test_mit_license_is_canonical_and_visible_in_every_locale(self):
         license_text = LICENSE.read_text()
@@ -91,6 +147,29 @@ class SkillContractTest(unittest.TestCase):
                 self.assertIn("[MIT License](LICENSE)", readme.read_text())
 
         self.assertNotIn("currently has no license file", BRAND.read_text())
+
+    def test_graphify_use_has_versioned_third_party_attribution(self):
+        notice = THIRD_PARTY_NOTICES.read_text()
+        self.assertIn("https://github.com/Graphify-Labs/graphify", notice)
+        self.assertIn("graphifyy==0.9.32", notice)
+        self.assertIn("v0.9.32/LICENSE", notice)
+        self.assertIn("v0.9.32/NOTICE", notice)
+        self.assertIn("Apache License 2.0", notice)
+        self.assertIn("not vendored", notice)
+        self.assertNotIn("Graphify", LICENSE.read_text())
+
+        for readme in (README, README_KO, README_ZH_CN):
+            with self.subTest(readme=readme.name):
+                text = readme.read_text()
+                self.assertIn("graphifyy==0.9.32", text)
+                self.assertIn("(THIRD_PARTY_NOTICES.md)", text)
+
+        for path in (
+            ROOT / "experiments/tool-routing/README.md",
+            EXPERIMENT,
+        ):
+            with self.subTest(path=path):
+                self.assertIn("../../THIRD_PARTY_NOTICES.md", path.read_text())
 
     def test_public_repository_policy_avoids_single_maintainer_deadlock(self):
         ruleset = json.loads(RULESET.read_text())
@@ -192,7 +271,7 @@ class SkillContractTest(unittest.TestCase):
         text = SKILL.read_text()
         frontmatter = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
         self.assertIsNotNone(frontmatter)
-        self.assertRegex(frontmatter.group(1), r"(?m)^name: review-response$")
+        self.assertRegex(frontmatter.group(1), r"(?m)^name: review-radius$")
         self.assertRegex(frontmatter.group(1), r"(?m)^description: .+$")
         self.assertIn("references/code-navigation.md", text)
         self.assertTrue(NAVIGATION.is_file())

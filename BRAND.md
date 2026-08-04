@@ -1,7 +1,7 @@
 # Review Radius brand guide
 
 [한국어](BRAND.ko.md) · [简体中文](BRAND.zh-CN.md) ·
-[Validation record](docs/brand/name-and-language-validation.md)
+[Naming and language](docs/brand/naming-and-language.md)
 
 ## Brand idea
 
@@ -23,14 +23,14 @@ validated cause and authorized change boundary.
 | Surface | Name | Rule |
 | --- | --- | --- |
 | Project and product | **Review Radius** | Use in prose, headings, repository descriptions, and visual identity. |
-| Installable skill | `review-response` | Keep stable for installation and `$review-response` invocation. |
+| Repository, skill, and command ID | `review-radius` | Use the same ID for installation, paths, metadata, and `$review-radius` invocation. |
 | Canonical repository | [`Jin-Doh/review-radius`](https://github.com/Jin-Doh/review-radius) | Use for public links and installation examples. |
 | Core workflow concept | review radius | Lowercase when describing the bounded search surface rather than the product. |
 
 <!-- markdownlint-enable MD013 -->
 
-Do not rename the skill ID to `review-radius` without an explicit compatibility
-and migration plan.
+Do not introduce aliases or legacy IDs unless a released integration requires a
+documented migration path.
 
 ## Positioning
 
@@ -152,13 +152,14 @@ font.
 Preferred:
 
 - “Run Review Radius on the unresolved PR feedback.”
-- “Install the `review-response` skill.”
+- “Install Review Radius with the `review-radius` skill ID.”
 - “The review radius includes both implementations but excludes the migration.”
 
 Avoid:
 
-- “Run the Review Response Skill product.”
-- “Install the `review-radius` skill.”
+- “Run the review response tool.”
+- using a second package or command name for compatibility without a released
+  consumer that needs it;
 - “Review Radius guarantees that no similar defect exists.”
 
 ## Terminology
@@ -181,11 +182,10 @@ The brand does not imply exhaustive repository analysis. Any completeness claim
 must name the inspected surface, capabilities, freshness, and remaining gaps.
 The benchmark evidence is synthetic and supports the routing mechanism only.
 
-Review Radius remains compatible with the existing `review-response` skill ID.
-Brand changes must not silently change installation, invocation, or evidence
-contracts.
+The repository, installable skill, and invocation use `review-radius`. Brand
+changes must keep that identity and the evidence contracts aligned.
 
-## Public-launch checklist
+## Consistency checklist
 
 - Keep the canonical public remote at `Jin-Doh/review-radius`.
 - Keep the root `LICENSE` file and localized README license links intact; the
@@ -193,8 +193,5 @@ contracts.
 - Keep install examples pinned to the canonical GitHub URL.
 - Set the GitHub repository description from the short description above.
 - Use `assets/review-radius-mark.svg` as the basis for the social preview.
-- Do not imply ownership of `reviewradius.com`; it was already registered when
-  checked on 2026-08-04.
-- Recheck GitHub, package registries, domains, and trademarks before a formal
-  public launch. The recorded public search is not legal clearance.
-- Preserve `review-response` as the skill ID through the first public release.
+- Keep the folder, frontmatter name, install examples, prompts, and tests on the
+  canonical `review-radius` ID.
