@@ -35,6 +35,8 @@ availability, that check may be evaluated independently before becoming a gate.
 - Head branches deleted after merge and branch updates allowed.
 - GitHub Actions receives read-only `GITHUB_TOKEN` permissions and cannot
   approve pull requests.
+- Only GitHub-owned actions are allowed, and action references must use a
+  full-length commit SHA.
 - Secret scanning, push protection, dependency alerts, automated security fixes,
   and private vulnerability reporting enabled when supported for the repository.
 - Dependabot checks GitHub Actions weekly.
