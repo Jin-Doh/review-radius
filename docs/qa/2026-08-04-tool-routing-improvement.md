@@ -183,4 +183,5 @@ the revised skill has already improved agent behavior on real repositories.
 ## 16. Harness completion
 
 Traceknot workflow execution is complete for this snapshot. Host task
-completion remains separate until the changes are committed and integrated.
+completion is also complete: the implementation and evidence report were
+committed and fast-forward integrated into `main`.
