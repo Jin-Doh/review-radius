@@ -604,6 +604,14 @@ class SkillContractTest(unittest.TestCase):
             "every reaction, reply, or resolution write; do not reuse one reread",
             normalized_design,
         )
+        self.assertRegex(
+            normalized_response,
+            r"(?is)mismatch.{0,120}rebind and reverify before that write",
+        )
+        self.assertRegex(
+            normalized_design,
+            r"(?is)mismatch.{0,120}rebind and reverify before that write",
+        )
         self.assertIn(
             "require it to equal the recorded pushed commit SHA",
             normalized_response,
