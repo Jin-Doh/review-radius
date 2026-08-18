@@ -1,4 +1,4 @@
 interface:
   display_name: "Review Radius · 리뷰 대응"
-  short_description: "리뷰가 드러낸 동종 결함을 근거가 확인된 범위까지 추적합니다."
-  default_prompt: "Use $review-radius to address this PR feedback, audit the same defect class, and verify the bounded fix."
+  short_description: "PR 피드백을 고정된 bounded 세션으로 수렴: 기본 자동 패치 2라운드, 동종 결함 감사, 전략 결정 시 일시중지, QA와 스레드 완료를 분리합니다."
+  default_prompt: "Use $review-radius for this PR review session. Freeze the bounded session to the repo, PR, head, and initial thread cursor; use the default automatic patch budget of two rounds and audit each defect class. Queue non-blocking feedback; pause on new defect classes or strategy decisions, while duplicates do not consume rounds and a new head requires new evidence. Keep QA verdict, delivery state, and review-thread completion independent; complete each separately."
