@@ -549,7 +549,7 @@ class SkillContractTest(unittest.TestCase):
             self.assertRegex(lowered, r"pushed\s+sha")
         self.assertRegex(
             skill,
-            r"(?is)after push.{0,180}(?:rerun|verify).{0,180}"
+            r"(?is)after push.{0,400}(?:rerun|verify).{0,180}"
             r"(?:focused|canonical)",
         )
         self.assertRegex(
@@ -582,7 +582,15 @@ class SkillContractTest(unittest.TestCase):
             "succeeds",
             normalized_response,
         )
-        self.assertIn("before any GitHub write", normalized_response)
+        self.assertIn(
+            "require it to equal the recorded pushed commit SHA",
+            normalized_response,
+        )
+        self.assertRegex(
+            normalized_response,
+            r"(?is)if it differs.{0,180}(?:paused|pause).{0,120}"
+            r"(?:rebind|verification)",
+        )
         self.assertIn("Reactions are dispositions during intake", design)
 
     def test_risk_levels_define_traceknot_selection(self):

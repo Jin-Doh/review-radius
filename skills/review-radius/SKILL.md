@@ -265,13 +265,18 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
 13. Push, rebind, and verify the delivered head before response writes.
     - Re-read `headRefOid` immediately before commit and push. A mismatch
       invalidates delivery readiness; do not write or push stale-head work.
-    - Commit with a message that identifies the corrected behavior and push
-      normally so hooks run. If environment restrictions break hooks, rerun the
-      same normal push in an authorized environment instead of bypassing
-      verification.
-    - After push, read the remote head again and bind the session to the pushed
-      SHA. Rerun the required focused verification and canonical gate against
-      that SHA; pre-push evidence remains informative but cannot satisfy the
+    - Commit with a message that identifies the corrected behavior and record
+      the exact local commit SHA that will be pushed. Push normally so hooks
+      run. If environment restrictions break hooks, rerun the same normal push
+      in an authorized environment instead of bypassing verification.
+    - After push, read the remote head again and require it to equal the
+      recorded pushed commit SHA before binding evidence. If it differs, mark
+      delivery and QA readiness `PAUSED`, do not bind local evidence to the
+      other contributor's head, and fetch/rebind that head before rerunning the
+      complete verification.
+    - Only after the equality check passes, bind the session to the pushed SHA.
+      Rerun the required focused verification and canonical gate against that
+      SHA; pre-push evidence remains informative but cannot satisfy the
       pushed-head QA obligation by itself.
     - Add the recorded reactions only after the pushed-head verification
       succeeds. For a no-code disposition, use the separately verified
