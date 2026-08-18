@@ -10,6 +10,7 @@ Review Radius 以审查意见为起点，在明确边界内检查相关代码中
 由同一原因造成的缺陷。它先验证反馈，再提炼被破坏的不变量，检查相关代码
 范围，最后依据实现状态和验证证据完成审查响应。仓库、可安装技能和调用 ID
 统一为 `review-radius`。
+[![skills.sh](https://skills.sh/b/Jin-Doh/review-radius)](https://skills.sh/Jin-Doh/review-radius/review-radius)
 
 [English](README.md) · [한국어](README.ko.md) ·
 [设计](docs/design.md) ·
@@ -55,11 +56,30 @@ QA 交接。审查收敛和 QA 判定彼此独立：有边界的反馈批次收�
 
 ## 安装
 
+Review Radius 已在 [skills.sh](https://skills.sh/Jin-Doh/review-radius/review-radius)
+登记为 `review-radius` 技能。
+源代码仓库：[Jin-Doh/review-radius](https://github.com/Jin-Doh/review-radius)。
+
+查看仓库提供的技能：
+
 ```sh
-npx skills add https://github.com/Jin-Doh/review-radius \
+npx skills add Jin-Doh/review-radius --list
+```
+
+为 Codex 全局安装：
+
+```sh
+npx skills add Jin-Doh/review-radius \
   --skill review-radius \
   --agent codex \
+  --global \
   -y
+```
+
+如需按项目安装，请省略 `--global`：
+
+```sh
+npx skills add Jin-Doh/review-radius --skill review-radius --agent codex -y
 ```
 
 本地开发时，可使用当前检出目录：

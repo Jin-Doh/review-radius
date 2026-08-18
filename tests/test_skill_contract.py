@@ -229,6 +229,24 @@ class SkillContractTest(unittest.TestCase):
             self.assertIn("https://github.com/Jin-Doh/review-radius", text)
             self.assertNotIn("<repository-url>", text)
 
+    def test_skills_sh_publication_and_install_contract(self):
+        for readme in (README, README_KO, README_ZH_CN):
+            text = readme.read_text()
+            with self.subTest(readme=readme.name):
+                self.assertIn(
+                    "https://skills.sh/Jin-Doh/review-radius/review-radius",
+                    text,
+                )
+                self.assertIn(
+                    "https://skills.sh/b/Jin-Doh/review-radius",
+                    text,
+                )
+                self.assertRegex(
+                    text,
+                    r"npx skills add Jin-Doh/review-radius\b",
+                )
+                self.assertIn("--skill review-radius", text)
+
     def test_brand_mark_is_valid_accessible_svg(self):
         root = ET.parse(MARK).getroot()
         namespace = "{http://www.w3.org/2000/svg}"
