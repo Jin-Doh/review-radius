@@ -281,12 +281,13 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       Rerun the required focused verification and canonical gate against that
       SHA; pre-push evidence remains informative but cannot satisfy the
       pushed-head QA obligation by itself.
-    - Add the recorded reactions only after the pushed-head verification
-      succeeds. For a no-code disposition, use the separately verified
-      no-code path from step 10; never react from stale pre-patch evidence.
-    - Re-read `headRefOid` immediately before reply, reaction, or resolution
-      writes. A mismatch invalidates response readiness; rebind and reverify
-      before any GitHub write.
+    - After pushed-head verification succeeds, re-read `headRefOid`
+      immediately before any GitHub write, including reactions. A mismatch
+      invalidates response readiness; rebind and reverify before writing.
+    - Add the recorded reactions only after that final head reread and the
+      pushed-head verification. For a no-code disposition, use the separately
+      verified no-code path from step 10; never react from stale pre-patch
+      evidence.
     - Reply to each addressed thread with the direct fix, same-class audit
       result, supporting post-push gate, and snapshot identity.
     - Resolve only threads whose requested change or explanation is complete.

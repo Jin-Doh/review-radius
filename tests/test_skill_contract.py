@@ -554,8 +554,8 @@ class SkillContractTest(unittest.TestCase):
         )
         self.assertRegex(
             skill,
-            r"(?is)re-read\s+`?headrefoid`?.{0,100}"
-            r"before reply, reaction, or resolution",
+            r"(?is)re-read\s+`?headrefoid`?.{0,120}"
+            r"before any github write, including reactions",
         )
         intake = re.search(
             r"(?is)10\. validate reaction dispositions.*?(?=\n11\.)",
@@ -572,14 +572,18 @@ class SkillContractTest(unittest.TestCase):
             r"(?im)^\s*-\s*(?:add|write|react)\b",
         )
         response_text = response.group(0)
+        normalized_response = re.sub(r"\s+", " ", response_text)
         self.assertLess(
             response_text.index("After push, read the remote head"),
             response_text.index("Add the recorded reactions"),
         )
-        normalized_response = re.sub(r"\s+", " ", response_text)
         self.assertIn(
-            "Add the recorded reactions only after the pushed-head verification "
-            "succeeds",
+            "immediately before any GitHub write, including reactions",
+            normalized_response,
+        )
+        self.assertIn(
+            "Add the recorded reactions only after that final head reread and "
+            "the pushed-head verification",
             normalized_response,
         )
         self.assertIn(
