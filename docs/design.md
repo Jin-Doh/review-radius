@@ -98,6 +98,9 @@ review-convergence pause; it remains an independent overall-completion outcome.
 The bounded recheck uses the current head, initial thread cursor, an immutable
 server-comparable cutoff, and per-comment `createdAt` or equivalent high-water
 metadata. New arrivals do not reset the cutoff or fixed observation deadline.
+Initialization sets the fixed observation deadline at least five minutes in the
+future, or uses a longer repository-defined interval. The deadline is
+non-resetting and cannot be satisfied by an immediate same-time check.
 Refetch known thread IDs as well as cursor pages so replies on existing threads
 are classified against the same cutoff. Treat each newly observed comment or
 reply as its own arrival; a frozen parent thread does not make a late reply
@@ -225,11 +228,11 @@ rerunning the complete verification.
 
 Only after the equality check passes, bind the session to the pushed SHA and
 rerun the required focused verification and canonical gate against that SHA. If
-the source worktree contains unrelated uncommitted edits, run this post-push
-verification from a clean detached or temporary worktree at the recorded SHA;
-preserve the source worktree because dirty-worktree evidence is not
-snapshot-bound. Pre-push evidence remains informative but cannot satisfy the
-pushed-head QA obligation alone.
+the source worktree has any uncommitted edits—including related, generated, or
+hook-created changes—run this post-push verification from a clean detached or
+temporary worktree at the recorded SHA. Preserve the source worktree because
+dirty-worktree evidence is not snapshot-bound. Pre-push evidence remains
+informative but cannot satisfy the pushed-head QA obligation alone.
 
 Reactions are dispositions during intake, not GitHub mutations. For a session
 that produces a patch, add them only after pushed-head verification succeeds

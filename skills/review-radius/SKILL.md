@@ -79,7 +79,8 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
    - If no current PR exists, ask for the PR URL or number.
    - Confirm the active repository, worktree, branch, and PR head. Create the
      Session ID, record the initial head, and set a server-comparable feedback
-     cutoff and fixed recheck deadline before reading feedback.
+     cutoff plus a fixed recheck deadline at least five minutes in the future
+     before reading feedback. The deadline is non-resetting.
    - Freeze the initial thread cursor and IDs for this session, but do not use
      cursor membership as admission. Include a comment or reply in the initial
      batch only when its own `createdAt` is at or before the cutoff; anything
@@ -277,10 +278,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       invalidate delivery and QA readiness, do not bind local evidence to the
       other contributor's head, and fetch/rebind that head before rerunning the
       complete verification.
-    - Only after the equality check passes, bind the session to the pushed SHA.
-    - If the source worktree has unrelated uncommitted edits, create a clean
-      detached or temporary worktree at the recorded pushed SHA. Preserve the
-      source worktree; dirty-worktree evidence is not snapshot-bound.
+    - If the source worktree has any uncommitted edits—including related,
+      generated, or hook-created changes—create a clean detached or temporary
+      worktree at the recorded pushed SHA. Preserve the source worktree; dirty
+      worktree evidence is not snapshot-bound.
     - Rerun the required focused verification and canonical gate against the
       pushed SHA from that clean worktree when the source worktree was dirty;
       otherwise use the clean source worktree. Pre-push evidence remains

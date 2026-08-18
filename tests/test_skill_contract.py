@@ -629,7 +629,8 @@ class SkillContractTest(unittest.TestCase):
         skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
         for text in (design, skill):
             for term in (
-                "unrelated uncommitted edits",
+                "any uncommitted edits",
+                "related, generated",
                 "clean detached or temporary worktree",
                 "recorded",
                 "sha",
@@ -684,6 +685,19 @@ class SkillContractTest(unittest.TestCase):
             r"(?is)initial batch only when its own `createdat` is at or before "
             r"the cutoff.{0,180}later timestamp is classified as post-cutoff",
         )
+
+    def test_recheck_deadline_has_a_future_minimum(self):
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)deadline.{0,100}at least five minutes in the future",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)deadline.{0,100}non[- ]resetting",
+            )
 
     def test_no_code_delivery_covers_all_explanation_writes(self):
         for path in (SKILL, DESIGN):
