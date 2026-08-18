@@ -567,12 +567,16 @@ class SkillContractTest(unittest.TestCase):
         )
         self.assertIsNotNone(intake)
         self.assertIsNotNone(response)
-        self.assertNotRegex(intake.group(0), r"(?i)add\s+.*(?:reaction|\+1|-1)")
-        self.assertRegex(
-            response.group(0),
-            r"(?is)add the recorded reactions.{0,120}"
-            r"pushed-head verification",
+        self.assertNotRegex(
+            intake.group(0),
+            r"(?im)^\s*-\s*(?:add|write|react)\b",
         )
+        response_text = response.group(0)
+        self.assertLess(
+            response_text.index("After push, read the remote head"),
+            response_text.index("Add the recorded reactions"),
+        )
+        self.assertIn("before any GitHub write", response_text)
         self.assertIn("Reactions are dispositions during intake", design)
 
     def test_risk_levels_define_traceknot_selection(self):
