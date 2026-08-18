@@ -221,22 +221,18 @@ not merely to the local commit before push.
 
 Classify the highest applicable level before selecting the QA handoff:
 
-- `R0`: documentation, tests, or metadata only; no runtime, public-contract,
-  security, data, deployment, or dependency behavior changes.
-- `R1`: localized implementation or configuration behavior with no public
-  contract, security, data-integrity, deployment, dependency, or architecture
-  impact beyond the bounded component.
-- `R2`: production behavior, integration, public contracts, reliability,
-  deployment/operations, dependency, or architecture changes broader than a
-  bounded component but not meeting `R3`.
-- `R3`: authentication/authorization, cryptography, destructive data migration,
-  concurrency/distributed coordination, critical production paths, or
-  cross-repository/system changes with material failure impact.
+- `R0`: documentation or inert metadata only.
+- `R1`: localized low-impact implementation.
+- `R2`: runtime behavior, persistence, UI, concurrency, security,
+  compatibility, or public-contract changes.
+- `R3`: release, migration, destructive operation, production infrastructure,
+  or unknown material scope.
 
-Choose the highest matching level; `R3` supersedes `R2`, and uncertainty uses
-the higher level until resolved. Traceknot is mandatory for `R2` and `R3`;
-`R0`/`R1` sessions use canonical focused obligations unless a recurring review
-loop independently requires the handoff.
+Choose the highest matching level; `R3` supersedes `R2`, and unknown scope
+resolves upward. Traceknot is mandatory for `R2` and `R3`; `R0`/`R1` sessions
+use canonical focused obligations unless a recurring review loop independently
+requires the handoff. Use the Traceknot risk-classification procedure as the
+authoritative rubric when a category is ambiguous.
 
 ## Completion contract
 
@@ -246,9 +242,10 @@ Evaluate three independent outcomes:
   and every admitted same-class thread has a disposition, every credible
   in-scope candidate is classified, every `affected` candidate is fixed or
   explicitly blocked, later non-blocking feedback is queued or assigned to a
-  new session, and no unresolved pause reason remains. Feedback requiring user
-  direction keeps the session `PAUSED`; classification alone cannot satisfy
-  convergence.
+  new session, post-cutoff same-class blocking feedback is recorded as a named
+  pause or follow-up, and no unresolved pause reason remains. Feedback
+  requiring user direction keeps the session `PAUSED`; classification alone
+  cannot satisfy convergence.
 - The QA verdict is acceptable only when mandatory verification obligations for
   the current head pass, or the user explicitly accepts every remaining
   material risk. An earlier-head result, lifecycle event, or green gate alone

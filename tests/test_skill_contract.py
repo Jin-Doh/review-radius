@@ -557,9 +557,21 @@ class SkillContractTest(unittest.TestCase):
             r"(?is)re-read\s+`?headrefoid`?.{0,100}"
             r"before reply, reaction, or resolution",
         )
-        self.assertLess(
-            skill.index("After push, read the remote head"),
-            skill.index("Add the recorded reactions"),
+        intake = re.search(
+            r"(?is)10\. validate reaction dispositions.*?(?=\n11\.)",
+            skill,
+        )
+        response = re.search(
+            r"(?is)13\. push, rebind, and verify.*?(?=\n14\.)",
+            skill,
+        )
+        self.assertIsNotNone(intake)
+        self.assertIsNotNone(response)
+        self.assertNotRegex(intake.group(0), r"(?i)add\s+.*(?:reaction|\+1|-1)")
+        self.assertRegex(
+            response.group(0),
+            r"(?is)add the recorded reactions.{0,120}"
+            r"pushed-head verification",
         )
         self.assertIn("Reactions are dispositions during intake", design)
 
@@ -580,6 +592,20 @@ class SkillContractTest(unittest.TestCase):
                 r"(?is)traceknot.{0,120}(?:mandatory|required).{0,120}"
                 r"r2",
             )
+            for term in (
+                "release, migration, destructive operation",
+                "production infrastructure",
+                "unknown material scope",
+                "public-contract",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, text)
+            self.assertRegex(
+                text,
+                r"(?is)(?:post-cutoff|same-class blocking).{0,160}"
+                r"(?:after the cutoff|pause|follow-up)",
+            )
+
     def test_openai_short_description_matches_distribution_length_contract(self):
         openai = OPENAI.read_text()
         match = re.search(r'(?m)^  short_description: "([^"]+)"$', openai)

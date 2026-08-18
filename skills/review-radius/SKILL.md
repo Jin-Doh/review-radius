@@ -111,9 +111,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      without consuming a round or triggering budget-exhaustion pause, whether
      current or queued.
    - `pause`: a new defect class, material behavior or scope expansion, new
-     public-contract or production-dependency decision, or a required patch
-     after the automatic budget is exhausted. Pause for user direction; do not
-     turn adjacency into automatic authorization.
+     public-contract or production-dependency decision, a same-class blocking
+     thread created after the cutoff, or a required patch after the automatic
+     budget is exhausted. Pause for user direction; do not turn adjacency into
+     automatic authorization.
    - A paused session cannot be `CONVERGED` until every named review pause
      reason is resolved or moved to a new session. The QA verdict does not
      create or resolve a review-convergence pause; it remains independent.
@@ -295,9 +296,12 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       server-comparable cutoff. The cutoff and deadline do not reset because
       feedback was fetched late or arrived near them.
     - Same-class blocking feedback created by the cutoff may join only while
-      patch budget remains. Non-blocking feedback is queued. A new defect class,
-      material strategy decision, or required patch after exhausted budget
-      pauses the review session; QA retains its independent verdict.
+      patch budget remains. Same-class blocking feedback created after the
+      cutoff cannot join this session: record it as a named `PAUSED` reason
+      and assign it to a new session or explicit follow-up. Non-blocking
+      feedback is queued. A new defect class, material strategy decision, or
+      required patch after exhausted budget also pauses the review session; QA
+      retains its independent verdict.
     - If admitted feedback causes a patch and a new head, run closed-set
       reconciliation for that admitted set and the new head. Revalidate QA and
       delivery readiness, but never admit feedback created after the original
@@ -323,22 +327,18 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
 
 Classify the highest applicable level before selecting the QA handoff:
 
-- `R0`: documentation, tests, or metadata only; no runtime, public-contract,
-  security, data, deployment, or dependency behavior changes.
-- `R1`: localized implementation or configuration behavior with no public
-  contract, security, data-integrity, deployment, dependency, or architecture
-  impact beyond the bounded component.
-- `R2`: production behavior, integration, public contracts, reliability,
-  deployment/operations, dependency, or architecture changes that are broader
-  than a bounded component but do not meet `R3`.
-- `R3`: authentication/authorization, cryptography, destructive data migration,
-  concurrency/distributed coordination, critical production paths, or
-  cross-repository/system changes with material failure impact.
+- `R0`: documentation or inert metadata only.
+- `R1`: localized low-impact implementation.
+- `R2`: runtime behavior, persistence, UI, concurrency, security,
+  compatibility, or public-contract changes.
+- `R3`: release, migration, destructive operation, production infrastructure,
+  or unknown material scope.
 
-Choose the highest matching level; `R3` supersedes `R2`, and uncertainty uses
-the higher level until resolved. Traceknot is mandatory for `R2` and `R3`;
-`R0`/`R1` sessions use the canonical focused obligations unless a recurring
-review loop independently requires the handoff.
+Choose the highest matching level; `R3` supersedes `R2`, and unknown scope
+resolves upward. Traceknot is mandatory for `R2` and `R3`; `R0`/`R1` sessions
+use canonical focused obligations unless a recurring review loop independently
+requires the handoff. Use the Traceknot risk-classification procedure as the
+authoritative rubric when a category is ambiguous.
 
 ## Optional Traceknot handoff
 
