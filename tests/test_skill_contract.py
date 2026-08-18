@@ -621,6 +621,35 @@ class SkillContractTest(unittest.TestCase):
                 with self.subTest(term=term):
                     self.assertIn(term, text)
 
+    def test_initial_admission_and_later_queue_are_explicit(self):
+        contracts = (
+            (
+                DESIGN,
+                (
+                    "all actionable threads in the initial frozen batch",
+                    "initial non-blocking feedback",
+                    "later non-blocking comments and replies are queued",
+                    "created after the cutoff",
+                    "named pause",
+                ),
+            ),
+            (
+                SKILL,
+                (
+                    "every actionable thread in the frozen batch",
+                    "initial non-blocking feedback",
+                    "`queued`: later non-blocking",
+                    "created after the cutoff",
+                    "pause",
+                ),
+            ),
+        )
+        for path, terms in contracts:
+            text = re.sub(r"\s+", " ", path.read_text().lower())
+            for term in terms:
+                with self.subTest(path=path.name, term=term):
+                    self.assertIn(term, text)
+
     def test_locale_summaries_match_initial_and_post_cutoff_admission(self):
         summaries = (
             (README, ("initial frozen batch", "same-class", "after the cutoff")),
