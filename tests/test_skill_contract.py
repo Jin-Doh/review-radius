@@ -670,6 +670,20 @@ class SkillContractTest(unittest.TestCase):
             for term in terms:
                 with self.subTest(path=path.name, term=term):
                     self.assertIn(term, text)
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        self.assertRegex(
+            design,
+            r"(?is)initial frozen batch only when its immutable `createdat` "
+            r"is at or before the cutoff.{0,180}"
+            r"later-timestamped item fetched during the initial read remains "
+            r"post-cutoff feedback",
+        )
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        self.assertRegex(
+            skill,
+            r"(?is)initial batch only when its own `createdat` is at or before "
+            r"the cutoff.{0,180}later timestamp is classified as post-cutoff",
+        )
 
     def test_no_code_delivery_covers_all_explanation_writes(self):
         for path in (SKILL, DESIGN):
@@ -685,6 +699,28 @@ class SkillContractTest(unittest.TestCase):
             skill,
             r"(?is)no-code disposition.{0,180}"
             r"(?:reaction, reply, or resolution|explanation-only response)",
+        )
+        self.assertRegex(
+            skill,
+            r"(?is)no-code disposition.{0,180}fresh `headrefoid` read "
+            r"confirms that no patch is required.{0,180}"
+            r"current-head no-code verification path is complete",
+        )
+        self.assertIn(
+            "cite the post-push gate for a patch, or the current-head no-code "
+            "verification for an explanation-only response",
+            skill,
+        )
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        self.assertIn(
+            "no-code dispositions use a fresh current-head verification path "
+            "for reactions, explanation replies, and resolutions",
+            design,
+        )
+        self.assertIn(
+            "patch replies cite the post-push gate; explanation-only replies "
+            "cite the current-head no-code verification",
+            design,
         )
 
     def test_locale_summaries_match_initial_and_post_cutoff_admission(self):
