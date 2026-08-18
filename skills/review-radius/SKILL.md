@@ -251,6 +251,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
 12. Verify the pre-push candidate and bind final QA to the pushed head.
     - Re-read `headRefOid` immediately before verification. A mismatch
       invalidates QA readiness and requires obligations bound to the new head.
+    - If the source worktree has unrelated uncommitted edits, create a clean
+      detached or temporary worktree at the recorded target SHA for the
+      post-push verification and canonical gate. Preserve the source worktree;
+      evidence from the dirty worktree is not snapshot-bound.
     - Run focused tests for the invariant and the repository's canonical local
       or CI gate. If the canonical gate is unavailable or too broad, run the
       nearest documented gate and state the gap. These pre-push results are
@@ -277,6 +281,9 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       invalidate delivery and QA readiness, do not bind local evidence to the
       other contributor's head, and fetch/rebind that head before rerunning the
       complete verification.
+    - Run the pushed-head verification from that clean worktree when the
+      source worktree was dirty; bind QA and gate evidence to the recorded SHA
+      and leave unrelated source-worktree edits untouched.
     - Only after the equality check passes, bind the session to the pushed SHA.
       Rerun the required focused verification and canonical gate against that
       SHA; pre-push evidence remains informative but cannot satisfy the

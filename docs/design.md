@@ -217,9 +217,12 @@ evidence to another contributor's head, and fetch/rebind that head before
 rerunning the complete verification.
 
 Only after the equality check passes, bind the session to the pushed SHA and
-rerun the required focused verification and canonical gate against that SHA.
-Pre-push evidence remains informative but cannot satisfy the pushed-head QA
-obligation alone.
+rerun the required focused verification and canonical gate against that SHA. If
+the source worktree contains unrelated uncommitted edits, run this post-push
+verification from a clean detached or temporary worktree at the recorded SHA;
+preserve the source worktree because dirty-worktree evidence is not
+snapshot-bound. Pre-push evidence remains informative but cannot satisfy the
+pushed-head QA obligation alone.
 
 Reactions are dispositions during intake, not GitHub mutations. For a session
 that produces a patch, add them only after pushed-head verification succeeds

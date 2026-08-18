@@ -549,7 +549,7 @@ class SkillContractTest(unittest.TestCase):
             self.assertRegex(lowered, r"pushed\s+sha")
         self.assertRegex(
             skill,
-            r"(?is)after push.{0,400}(?:rerun|verify).{0,180}"
+            r"(?is)after push.{0,700}(?:rerun|verify).{0,180}"
             r"(?:focused|canonical)",
         )
         self.assertRegex(
@@ -597,6 +597,20 @@ class SkillContractTest(unittest.TestCase):
             r"(?:rebind|verification)",
         )
         self.assertIn("Reactions are dispositions during intake", design)
+
+    def test_pushed_head_verification_is_snapshot_bound(self):
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        for text in (design, skill):
+            for term in (
+                "unrelated uncommitted edits",
+                "clean detached or temporary worktree",
+                "recorded sha",
+                "preserve the source worktree",
+                "not snapshot-bound",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, text)
 
     def test_risk_levels_define_traceknot_selection(self):
         design = DESIGN.read_text().lower()
