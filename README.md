@@ -54,10 +54,13 @@ refactoring.
 ## Bounded review sessions
 
 Review Radius works in a bounded review session tied to the repository, PR,
-current head, and feedback visible when the session starts. Later feedback does
-not silently expand that batch: same-class blocking feedback may join while
-budget remains; non-blocking feedback is queued; feedback that introduces a new
-defect class or material strategy decision pauses the session for user direction.
+current head, and feedback visible when the session starts. Every actionable
+thread in that initial frozen batch, including non-blocking feedback, is
+classified and dispositioned in the current session. Later feedback does not
+silently expand that batch: same-class blocking feedback created by the cutoff
+may join while budget remains; later non-blocking feedback is queued; same-class
+blocking feedback created after the cutoff pauses the session for user
+direction, even on a frozen thread.
 
 The default automatic patch budget is **two rounds**. A two-pass review—before
 implementation and after implementation—is distinct from that budget. When a

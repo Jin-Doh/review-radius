@@ -99,15 +99,17 @@ reply as its own arrival; a frozen parent thread does not make a late reply
 current. Revalidate the remote PR head before each patch and verification cycle
 and immediately before delivery writes.
 
-Same-class blocking comments or replies created by the cutoff may join only
-while a patch budget remains. A same-class blocking comment or reply created
-after the cutoff cannot join this session, even on a frozen thread; record it as
-a named pause and assign it to a new session or explicit follow-up. Non-blocking
-comments and replies are queued. A new defect class or material strategy
-decision pauses for user direction. If admitted feedback causes a new patch,
-run closed-set reconciliation for that admitted set and the new head without
-admitting feedback created after the original cutoff. Any new patch makes
-earlier evidence informative but insufficient for the new snapshot.
+All actionable threads in the initial frozen batch are `current`, including
+initial non-blocking feedback. Same-class blocking comments or replies created
+by the cutoff may join only while a patch budget remains. A same-class blocking
+comment or reply created after the cutoff cannot join this session, even on a
+frozen thread; record it as a named pause and assign it to a new session or
+explicit follow-up. Later non-blocking comments and replies are queued. A new
+defect class or material strategy decision pauses for user direction.
+If admitted feedback causes a new patch, run closed-set reconciliation for that
+admitted set and the new head without admitting feedback created after the
+original cutoff. Any new patch makes earlier evidence informative but
+insufficient for the new snapshot.
 
 ## Review-lens record
 

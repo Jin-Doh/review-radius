@@ -104,10 +104,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
    - Ignore resolved or outdated threads by default, but include them when they
      provide evidence that the same defect still exists at the current head.
 3. Classify incoming feedback without silently extending the session.
-   - `current`: a frozen-batch thread whose blocking comments and replies were
-     created by the cutoff, or same-class blocking feedback created by the
-     server-comparable cutoff while budget remains and the behavior surface
-     does not materially expand.
+   - `current`: every actionable thread in the frozen batch, including initial
+     non-blocking feedback, plus same-class blocking feedback created by the
+     cutoff while budget remains and the behavior surface does not materially
+     expand.
    - `queued`: later non-blocking comments or replies, including feedback on a
      frozen thread that can wait for a later session.
    - Duplicate, reply-only, and other no-code feedback is always dispositioned

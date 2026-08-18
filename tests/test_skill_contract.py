@@ -621,6 +621,18 @@ class SkillContractTest(unittest.TestCase):
                 with self.subTest(term=term):
                     self.assertIn(term, text)
 
+    def test_locale_summaries_match_initial_and_post_cutoff_admission(self):
+        summaries = (
+            (README, ("initial frozen batch", "same-class", "after the cutoff")),
+            (README_KO, ("초기 동결 묶음", "컷오프 이후", "일시 중지")),
+            (README_ZH_CN, ("初始冻结批次", "截止时间后", "暂停会话")),
+        )
+        for path, terms in summaries:
+            text = re.sub(r"\s+", " ", path.read_text().lower())
+            for term in terms:
+                with self.subTest(path=path.name, term=term):
+                    self.assertIn(term.lower(), text)
+
     def test_risk_levels_define_traceknot_selection(self):
         design = DESIGN.read_text().lower()
         skill = SKILL.read_text().lower()
