@@ -207,12 +207,17 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      license, dependency, performance, integration, or replacement assumptions
      materially change; otherwise do not relitigate it during review churn.
 
-10. React to validated comments when authorized.
-    - Add `+1` for correct and actionable feedback.
-    - Add `-1` for incorrect or not-actionable feedback and prepare a concise,
-      evidence-based explanation.
+10. Validate reaction dispositions without mutating GitHub during intake.
+    - Classify each validated comment as `+1` for correct/actionable feedback or
+      `-1` for incorrect/not-actionable feedback, with a concise evidence-based
+      explanation for `-1`.
     - Do not react to ambiguous comments until resolving the ambiguity.
-    - Check existing reactions where practical to avoid duplicates.
+    - Record the intended reaction and check existing reactions where practical
+      to avoid duplicates, but defer the GitHub reaction write until the
+      post-push response phase whenever this session produces a patch.
+    - For a no-code disposition, a reaction may be written only after a fresh
+      head read confirms that no patch is required and the no-code verification
+      path is current.
     - GitHub writes remain subject to explicit user authorization or a request
       for end-to-end review response; a review session never grants authority
       by itself.
@@ -267,6 +272,9 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       SHA. Rerun the required focused verification and canonical gate against
       that SHA; pre-push evidence remains informative but cannot satisfy the
       pushed-head QA obligation by itself.
+    - Add the recorded reactions only after the pushed-head verification
+      succeeds. For a no-code disposition, use the separately verified
+      no-code path from step 10; never react from stale pre-patch evidence.
     - Re-read `headRefOid` immediately before reply, reaction, or resolution
       writes. A mismatch invalidates response readiness; rebind and reverify
       before any GitHub write.
@@ -310,6 +318,27 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       dynamic surfaces remain unverified.
     - If no related defect was found, report what surfaces and patterns were
       checked instead of stating only that none existed.
+
+## Risk levels
+
+Classify the highest applicable level before selecting the QA handoff:
+
+- `R0`: documentation, tests, or metadata only; no runtime, public-contract,
+  security, data, deployment, or dependency behavior changes.
+- `R1`: localized implementation or configuration behavior with no public
+  contract, security, data-integrity, deployment, dependency, or architecture
+  impact beyond the bounded component.
+- `R2`: production behavior, integration, public contracts, reliability,
+  deployment/operations, dependency, or architecture changes that are broader
+  than a bounded component but do not meet `R3`.
+- `R3`: authentication/authorization, cryptography, destructive data migration,
+  concurrency/distributed coordination, critical production paths, or
+  cross-repository/system changes with material failure impact.
+
+Choose the highest matching level; `R3` supersedes `R2`, and uncertainty uses
+the higher level until resolved. Traceknot is mandatory for `R2` and `R3`;
+`R0`/`R1` sessions use the canonical focused obligations unless a recurring
+review loop independently requires the handoff.
 
 ## Optional Traceknot handoff
 

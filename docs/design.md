@@ -209,10 +209,34 @@ head, bind the session to the pushed SHA, and rerun the required focused
 verification and canonical gate against that SHA. Pre-push evidence remains
 informative but cannot satisfy the pushed-head QA obligation alone.
 
-Re-read the remote head immediately before reply, reaction, or resolution
-writes. A mismatch invalidates response readiness; rebind and reverify before
-any GitHub write. Delivery completion and QA completion therefore both refer to
-the pushed head, not merely to the local commit before push.
+Reactions are dispositions during intake, not GitHub mutations. For a session
+that produces a patch, write them only after pushed-head verification succeeds;
+no-code dispositions use a separately verified no-code path. Re-read the remote
+head immediately before every reply, reaction, or resolution write. A mismatch
+invalidates response readiness; rebind and reverify before any GitHub write.
+Delivery completion and QA completion therefore both refer to the pushed head,
+not merely to the local commit before push.
+
+## Risk levels
+
+Classify the highest applicable level before selecting the QA handoff:
+
+- `R0`: documentation, tests, or metadata only; no runtime, public-contract,
+  security, data, deployment, or dependency behavior changes.
+- `R1`: localized implementation or configuration behavior with no public
+  contract, security, data-integrity, deployment, dependency, or architecture
+  impact beyond the bounded component.
+- `R2`: production behavior, integration, public contracts, reliability,
+  deployment/operations, dependency, or architecture changes broader than a
+  bounded component but not meeting `R3`.
+- `R3`: authentication/authorization, cryptography, destructive data migration,
+  concurrency/distributed coordination, critical production paths, or
+  cross-repository/system changes with material failure impact.
+
+Choose the highest matching level; `R3` supersedes `R2`, and uncertainty uses
+the higher level until resolved. Traceknot is mandatory for `R2` and `R3`;
+`R0`/`R1` sessions use canonical focused obligations unless a recurring review
+loop independently requires the handoff.
 
 ## Completion contract
 

@@ -557,6 +557,29 @@ class SkillContractTest(unittest.TestCase):
             r"(?is)re-read\s+`?headrefoid`?.{0,100}"
             r"before reply, reaction, or resolution",
         )
+        self.assertLess(
+            skill.index("After push, read the remote head"),
+            skill.index("Add the recorded reactions"),
+        )
+        self.assertIn("Reactions are dispositions during intake", design)
+
+    def test_risk_levels_define_traceknot_selection(self):
+        design = DESIGN.read_text().lower()
+        skill = SKILL.read_text().lower()
+        for text in (design, skill):
+            for level in ("r0", "r1", "r2", "r3"):
+                with self.subTest(level=level):
+                    self.assertIn(f"`{level}`", text)
+            self.assertRegex(
+                text,
+                r"(?is)r3.{0,240}(?:supersedes|higher level).{0,120}"
+                r"r2",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)traceknot.{0,120}(?:mandatory|required).{0,120}"
+                r"r2",
+            )
     def test_openai_short_description_matches_distribution_length_contract(self):
         openai = OPENAI.read_text()
         match = re.search(r'(?m)^  short_description: "([^"]+)"$', openai)
