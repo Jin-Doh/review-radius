@@ -239,12 +239,13 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       handled between rounds without incrementing the automatic round counter.
       Never use that rule to conceal a code or behavior change.
 
-12. Run gates and record the QA verdict for the current head.
+12. Verify the pre-push candidate and bind final QA to the pushed head.
     - Re-read `headRefOid` immediately before verification. A mismatch
       invalidates QA readiness and requires obligations bound to the new head.
     - Run focused tests for the invariant and the repository's canonical local
       or CI gate. If the canonical gate is unavailable or too broad, run the
-      nearest documented gate and state the gap.
+      nearest documented gate and state the gap. These pre-push results are
+      candidate evidence because the remote PR head has not changed yet.
     - Record command or scenario identity, target snapshot, timestamps, exit
       status, relevant output, artifacts, and the linked obligation. A timeout,
       cancellation, unavailable dependency, missing output, or unfinished
@@ -255,16 +256,22 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       `INCOMPLETE` QA can never be called complete because threads were replied
       to or resolved.
 
-13. Commit, push, reply, and resolve only the authorized state.
-    - Re-read `headRefOid` immediately before commit, push, reply, reaction, or
-      resolution writes. A mismatch invalidates delivery readiness; do not write
-      a stale-head response before rebinding and re-verifying.
+13. Push, rebind, and verify the delivered head before response writes.
+    - Re-read `headRefOid` immediately before commit and push. A mismatch
+      invalidates delivery readiness; do not write or push stale-head work.
     - Commit with a message that identifies the corrected behavior and push
       normally so hooks run. If environment restrictions break hooks, rerun the
       same normal push in an authorized environment instead of bypassing
       verification.
+    - After push, read the remote head again and bind the session to the pushed
+      SHA. Rerun the required focused verification and canonical gate against
+      that SHA; pre-push evidence remains informative but cannot satisfy the
+      pushed-head QA obligation by itself.
+    - Re-read `headRefOid` immediately before reply, reaction, or resolution
+      writes. A mismatch invalidates response readiness; rebind and reverify
+      before any GitHub write.
     - Reply to each addressed thread with the direct fix, same-class audit
-      result, supporting gate, and snapshot identity.
+      result, supporting post-push gate, and snapshot identity.
     - Resolve only threads whose requested change or explanation is complete.
       Leave ambiguous, invalid, uncertain, or blocked threads unresolved with a
       clear evidence-based reply.

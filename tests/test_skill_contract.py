@@ -532,6 +532,38 @@ class SkillContractTest(unittest.TestCase):
             r"traceknot absence alone does not block",
         )
 
+    def test_pushed_head_verification_precedes_review_writes(self):
+        design = DESIGN.read_text()
+        skill = SKILL.read_text()
+
+        for text in (design, skill):
+            lowered = text.lower()
+            for term in (
+                "pre-push",
+                "after push",
+                "candidate evidence",
+                "cannot satisfy",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, lowered)
+            self.assertRegex(lowered, r"pushed\s+sha")
+        self.assertRegex(
+            skill,
+            r"(?is)after push.{0,180}(?:rerun|verify).{0,180}"
+            r"(?:focused|canonical)",
+        )
+        self.assertRegex(
+            skill,
+            r"(?is)re-read\s+`?headrefoid`?.{0,100}"
+            r"before reply, reaction, or resolution",
+        )
+    def test_openai_short_description_matches_distribution_length_contract(self):
+        openai = OPENAI.read_text()
+        match = re.search(r'(?m)^  short_description: "([^"]+)"$', openai)
+        self.assertIsNotNone(match)
+        self.assertGreaterEqual(len(match.group(1)), 25)
+        self.assertLessEqual(len(match.group(1)), 64)
+
     def test_review_churn_frontmatter_and_openai_prompt_share_session_contract(self):
         skill = SKILL.read_text()
         frontmatter = re.match(r"^---\n(.*?)\n---\n", skill, re.DOTALL)

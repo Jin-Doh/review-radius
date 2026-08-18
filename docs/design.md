@@ -201,6 +201,19 @@ Run two distinct reviews:
 
 Passing the repository's existing test suite does not replace either pass.
 
+## Pushed-head verification
+
+Verification before commit and push is candidate evidence because the remote
+pull request still points at the previous head. After push, re-read the remote
+head, bind the session to the pushed SHA, and rerun the required focused
+verification and canonical gate against that SHA. Pre-push evidence remains
+informative but cannot satisfy the pushed-head QA obligation alone.
+
+Re-read the remote head immediately before reply, reaction, or resolution
+writes. A mismatch invalidates response readiness; rebind and reverify before
+any GitHub write. Delivery completion and QA completion therefore both refer to
+the pushed head, not merely to the local commit before push.
+
 ## Completion contract
 
 Evaluate three independent outcomes:
