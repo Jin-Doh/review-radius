@@ -84,11 +84,11 @@ reason and extend the budget. Record the extension and transition `PAUSED ->
 OPEN` only while the current head, cutoff, and scope assumptions remain valid;
 otherwise start a new session.
 
-Feedback that introduces a new defect class, expands the behavior surface,
-requires a new dependency or public-contract decision, or leaves a mandatory
-QA obligation failed, blocked, or incomplete also pauses the session. A paused
-session cannot be converged until every pause reason is resolved or moved to a
-new session.
+Feedback that introduces a new defect class, expands the behavior surface, or
+requires a new dependency or public-contract decision also pauses the session.
+A paused session cannot be converged until every review pause reason is resolved
+or moved to a new session. The QA verdict does not create or resolve a
+review-convergence pause; it remains an independent overall-completion outcome.
 
 The bounded recheck uses the current head, initial thread cursor, an immutable
 server-comparable cutoff, and per-comment `createdAt` or equivalent high-water
@@ -216,6 +216,8 @@ Evaluate three independent outcomes:
   the current head pass, or the user explicitly accepts every remaining
   material risk. An earlier-head result, lifecycle event, or green gate alone
   cannot establish this outcome.
+  Traceknot is the required QA handoff for `R2`/`R3` changes and recurring
+  review loops; it remains optional for ordinary lower-risk sessions.
   For a selected or required Traceknot handoff, an unavailable required
   capability is `BLOCKED`; available capability with unfinished mandatory
   execution or evidence is `INCOMPLETE`. Traceknot absence alone does not block

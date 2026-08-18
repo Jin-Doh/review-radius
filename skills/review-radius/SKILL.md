@@ -111,12 +111,12 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      without consuming a round or triggering budget-exhaustion pause, whether
      current or queued.
    - `pause`: a new defect class, material behavior or scope expansion, new
-     public-contract or production-dependency decision, a required patch after
-     the automatic budget is exhausted, or mandatory QA that is `FAIL`,
-     `BLOCKED`, or `INCOMPLETE`. Pause for user direction; do not turn adjacency
-     into automatic authorization.
-   - A paused session cannot be `CONVERGED` until every named pause reason is
-     resolved or moved to a new session.
+     public-contract or production-dependency decision, or a required patch
+     after the automatic budget is exhausted. Pause for user direction; do not
+     turn adjacency into automatic authorization.
+   - A paused session cannot be `CONVERGED` until every named review pause
+     reason is resolved or moved to a new session. The QA verdict does not
+     create or resolve a review-convergence pause; it remains independent.
    - A new head is not proof that the session converged. Mark prior evidence
      stale for pass purposes, bind the next analysis and QA obligations to the
      new snapshot, and keep the cutoff and fixed deadline unchanged.
@@ -281,8 +281,8 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       feedback was fetched late or arrived near them.
     - Same-class blocking feedback created by the cutoff may join only while
       patch budget remains. Non-blocking feedback is queued. A new defect class,
-      material strategy decision, required patch after exhausted budget, or
-      mandatory QA failure, block, or incompleteness pauses the session.
+      material strategy decision, or required patch after exhausted budget
+      pauses the review session; QA retains its independent verdict.
     - If admitted feedback causes a patch and a new head, run closed-set
       reconciliation for that admitted set and the new head. Revalidate QA and
       delivery readiness, but never admit feedback created after the original
@@ -306,10 +306,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
 
 ## Optional Traceknot handoff
 
-Traceknot is an optional integration, not an unconditional dependency. For an
-`R2`/`R3` change or a recurring review loop, use the selected Traceknot handoff
-as the QA handoff when that profile is required. Bind the handoff to the
-session's current head, review-lens obligations, risk, and test basis.
+Traceknot is an optional integration for ordinary lower-risk sessions, not an
+unconditional dependency. It is the required QA handoff for every `R2`/`R3`
+change and recurring review loop. Bind the handoff to the session's current
+head, review-lens obligations, risk, and test basis.
 
 Accept only evidence-backed Traceknot observations and verdicts; an agent's
 completion claim, a lifecycle event, or a green gate alone is not QA proof. A

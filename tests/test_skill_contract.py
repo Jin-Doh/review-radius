@@ -439,6 +439,15 @@ class SkillContractTest(unittest.TestCase):
                 r"(?:never|cannot|does not).{0,100}"
                 r"(?:success|complete)",
             )
+            self.assertRegex(
+                text,
+                r"(?is)qa verdict does not.{0,80}(?:create|resolve)"
+                r".{0,80}review-convergence pause",
+            )
+            self.assertNotRegex(
+                text,
+                r"(?is)mandatory qa.{0,120}pauses? (?:the )?(?:review )?session",
+            )
 
     def test_strategy_gate_and_optional_traceknot_semantics_are_explicit(self):
         design = DESIGN.read_text()
@@ -466,16 +475,13 @@ class SkillContractTest(unittest.TestCase):
             r"(?is)(?:optional|not an unconditional dependency).{0,160}"
             r"traceknot|traceknot.{0,160}(?:optional|unconditional)",
         )
-        self.assertRegex(
-            skill,
-            r"(?is)(?:r2|r3).{0,180}traceknot|"
-            r"traceknot.{0,180}(?:r2|r3)",
-        )
-        self.assertRegex(
-            skill,
-            r"(?is)recurring.{0,160}(?:review|loop).{0,160}traceknot|"
-            r"traceknot.{0,160}recurring",
-        )
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)(?:required qa handoff.{0,120}`?R2`?/`?R3`?|"
+                r"`?R2`?/`?R3`?.{0,120}required qa handoff)"
+                r".{0,180}recurring.{0,80}review loop",
+            )
         for text in (design, skill):
             lowered = text.lower()
             self.assertIn("selected or required", lowered)
