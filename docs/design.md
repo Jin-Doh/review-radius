@@ -23,6 +23,11 @@ repository-wide refactor.
 6. Encode the invariant in tests instead of protecting only the reported line.
 7. Keep GitHub thread closure and CI proof as necessary, but not sufficient,
    completion evidence.
+8. Freeze each review session to a PR head and initial thread cursor so newly
+   arriving feedback cannot silently extend the active batch.
+9. Bound automatic patch cycles independently from the required pre- and
+   post-implementation review passes.
+10. Keep review convergence, QA verdict, and delivery state independent.
 
 ## Core model
 
@@ -40,6 +45,79 @@ review comment
 The defect class, rather than the individual thread, is the planning and
 implementation unit. Multiple threads may map to one defect class, and one
 thread may reveal multiple candidates.
+
+## Review-session model
+
+A review session is the bounded execution unit around one or more defect
+classes. Record:
+
+<!-- markdownlint-disable MD013 -->
+
+| Field | Purpose |
+| --- | --- |
+| Session ID | Distinguish retries and later feedback batches. |
+| Repository, PR, initial head, and current head | Bind source inspection and evidence to one snapshot at a time. |
+| Initial thread cursor and IDs | Freeze the feedback batch observed at session start. |
+| Server-comparable cutoff and comment high-water marks | Classify arrivals deterministically by immutable `createdAt` metadata. |
+| Queued thread IDs | Preserve later feedback without silently expanding the batch. |
+| Defect classes | Cluster duplicate or related threads by root cause. |
+| Automatic round and budget | Bound repeated patch cycles; default to two. |
+| Scope boundary | Preserve the authorized behavior and repository surface. |
+| Strategy decisions and premises | Reuse approved choices only while every material comparison premise remains valid. |
+| Review convergence | `OPEN`, `CONVERGED`, `PAUSED`, or `BLOCKED`. |
+| QA verdict | `NOT_RUN`, `PASS`, `PASS_WITH_ACCEPTED_RISK`, `FAIL`, `BLOCKED`, or `INCOMPLETE`. |
+| Delivery state | `NOT_STARTED`, `READY`, `REPLIED`, `RESOLVED`, or `PUSHED`. |
+
+<!-- markdownlint-enable MD013 -->
+The initial cursor and IDs are navigation boundaries, not admission proof.
+Include a comment or reply in the initial frozen batch only when its immutable
+`createdAt` is at or before the cutoff. A later-timestamped item fetched during
+the initial read remains post-cutoff feedback and cannot become `current` merely
+because its thread ID was frozen.
+
+One automatic round is `analyze -> plan -> patch -> verify -> respond ->
+bounded recheck`. A duplicate classification, reply-only response, or
+explanation that changes no code does not consume a round. A new patch,
+behavior-contract change, or newly authorized defect class does. The required
+two-pass review is not a two-round budget: every patch round still receives
+pre-implementation analysis and post-implementation rereview.
+
+The default automatic budget is two rounds. Budget exhaustion pauses only when
+another patch is required; duplicates, reply-only responses, and other no-code
+dispositions remain permitted. A user may explicitly resolve a named pause
+reason and extend the budget. Record the extension and transition `PAUSED ->
+OPEN` only while the current head, cutoff, and scope assumptions remain valid;
+otherwise start a new session.
+
+Feedback that introduces a new defect class, expands the behavior surface, or
+requires a new dependency or public-contract decision also pauses the session.
+A paused session cannot be converged until every review pause reason is resolved
+or moved to a new session. The QA verdict does not create or resolve a
+review-convergence pause; it remains an independent overall-completion outcome.
+
+The bounded recheck uses the current head, initial thread cursor, an immutable
+server-comparable cutoff, and per-comment `createdAt` or equivalent high-water
+metadata. New arrivals do not reset the cutoff or fixed observation deadline.
+Initialization sets the fixed observation deadline at least five minutes in the
+future, or uses a longer repository-defined interval. The deadline is
+non-resetting and cannot be satisfied by an immediate same-time check.
+Refetch known thread IDs as well as cursor pages so replies on existing threads
+are classified against the same cutoff. Treat each newly observed comment or
+reply as its own arrival; a frozen parent thread does not make a late reply
+current. Revalidate the remote PR head before each patch and verification cycle
+and immediately before delivery writes.
+
+All actionable threads in the initial frozen batch are `current`, including
+initial non-blocking feedback. Same-class blocking comments or replies created
+by the cutoff may join only while a patch budget remains. A same-class blocking
+comment or reply created after the cutoff cannot join this session, even on a
+frozen thread; record it as a named pause and assign it to a new session or
+explicit follow-up. Later non-blocking comments and replies are queued. A new
+defect class or material strategy decision pauses for user direction.
+If admitted feedback causes a new patch, run closed-set reconciliation for that
+admitted set and the new head without admitting feedback created after the
+original cutoff. Any new patch makes earlier evidence informative but
+insufficient for the new snapshot.
 
 ## Review-lens record
 
@@ -101,10 +179,30 @@ Allow expansion when all of the following hold:
   decision.
 
 Pause or create a follow-up when the candidate crosses repositories, changes a
-public contract, requires migration or production authority, conflicts with
-another requirement, or makes the PR substantially harder to review safely.
+public contract, requires a new production dependency, migration, or production
+authority, conflicts with another requirement, introduces a product or
+architecture decision, or makes the PR substantially harder to review safely.
 
 This replaces line-level minimalism with cause-level minimalism.
+
+## Implementation-strategy decisions
+
+Do not turn every review into a build-versus-buy exercise. Open a strategy gate
+only when the fix needs a new production dependency, a nontrivial subsystem, a
+public-contract change, or implementation of a protocol, parser, cryptographic
+primitive, or concurrency mechanism.
+
+Present direct implementation, reuse of an existing project dependency, a new
+open-source dependency, and a follow-up PR when they are credible options.
+Compare requirement fit, implementation size, maintenance ownership, security,
+license compatibility, transitive dependencies, performance, integration cost,
+and replacement cost. Recommend one option with evidence, but require explicit
+user approval before adding a production dependency or materially expanding the
+authorized architecture. Preserve the decision and every material comparison
+premise in the session. Reuse it only while those premises remain valid; reopen
+the decision when requirements, implementation size, maintenance, security,
+license, dependency, performance, integration, or replacement assumptions
+materially change.
 
 ## Two-pass review
 
@@ -118,17 +216,83 @@ Run two distinct reviews:
 
 Passing the repository's existing test suite does not replace either pass.
 
+## Pushed-head verification
+
+Verification before commit and push is candidate evidence because the remote
+pull request still points at the previous head. Record the exact local commit
+SHA that will be pushed. After push, read the remote head and require equality
+with that recorded SHA before binding evidence or rerunning verification. If
+the OIDs differ, invalidate delivery and QA readiness, do not bind local
+evidence to another contributor's head, and fetch/rebind that head before
+rerunning the complete verification.
+
+Only after the equality check passes, bind the session to the pushed SHA and
+rerun the required focused verification and canonical gate against that SHA. If
+the source worktree has any uncommitted edits—including related, generated, or
+hook-created changes—run this post-push verification from a clean detached or
+temporary worktree at the recorded SHA. Preserve the source worktree because
+dirty-worktree evidence is not snapshot-bound. Pre-push evidence remains
+informative but cannot satisfy the pushed-head QA obligation alone.
+
+Reactions are dispositions during intake, not GitHub mutations. For a session
+that produces a patch, add them only after pushed-head verification succeeds
+and their own immediate remote-head reread. No-code dispositions use a fresh
+current-head verification path for reactions, explanation replies, and
+resolutions. Re-read the remote head immediately before every reaction, reply,
+or resolution write; do not reuse one reread as the guard for a later mutation.
+A mismatch invalidates response readiness; rebind and reverify before that
+write. Patch replies cite the post-push gate; explanation-only replies cite the
+current-head no-code verification.
+Delivery completion and QA completion therefore both refer to the pushed head,
+not merely to the local commit before push.
+
+## Risk levels
+
+Classify the highest applicable level before selecting the QA handoff:
+
+- `R0`: documentation or inert metadata only.
+- `R1`: localized low-impact implementation.
+- `R2`: runtime behavior, persistence, UI, concurrency, security,
+  compatibility, or public-contract changes.
+- `R3`: release, migration, destructive operation, production infrastructure,
+  or unknown material scope.
+
+Choose the highest matching level; `R3` supersedes `R2`, and unknown scope
+resolves upward. Traceknot is mandatory for `R2` and `R3`; `R0`/`R1` sessions
+use canonical focused obligations unless a recurring review loop independently
+requires the handoff. Use the Traceknot risk-classification procedure as the
+authoritative rubric when a category is ambiguous.
+
 ## Completion contract
 
-Declare the review response complete only when:
+Evaluate three independent outcomes:
 
-- every actionable thread has a disposition;
-- every credible in-scope candidate has been classified;
-- every `affected` candidate has been fixed or explicitly blocked;
-- every `out-of-scope` defect has a visible follow-up disposition;
-- regression evidence protects the invariant and canonical gates pass;
-- replies and thread resolution match the actual implementation state;
-- the final wait and recheck finds no new actionable review or failing PR gate.
+- Review convergence is `CONVERGED` only when every thread in the frozen batch
+  and every admitted same-class thread has a disposition, every credible
+  in-scope candidate is classified, every `affected` candidate is fixed or
+  explicitly blocked, later non-blocking feedback is queued or assigned to a
+  new session, post-cutoff same-class blocking feedback is recorded as a named
+  pause or follow-up, and no unresolved pause reason remains. Feedback
+  requiring user direction keeps the session `PAUSED`; classification alone
+  cannot satisfy convergence.
+- The QA verdict is acceptable only when mandatory verification obligations for
+  the current head pass, or the user explicitly accepts every remaining
+  material risk. An earlier-head result, lifecycle event, or green gate alone
+  cannot establish this outcome.
+  Traceknot is the required QA handoff for `R2`/`R3` changes and recurring
+  review loops; it remains optional for ordinary lower-risk sessions.
+  For a selected or required Traceknot handoff, an unavailable required
+  capability is `BLOCKED`; available capability with unfinished mandatory
+  execution or evidence is `INCOMPLETE`. Traceknot absence alone does not block
+  a session for which the handoff is neither selected nor required.
+- Delivery is complete only when replies, reactions, resolution, commits, and
+  pushes match the authorized implementation state.
+
+Overall completion requires review convergence, an acceptable QA verdict, and
+the authorized delivery state. `FAIL`, `BLOCKED`, or `INCOMPLETE` QA never
+becomes success because threads were resolved. The bounded final recheck is
+review-convergence evidence; it does not replace QA evaluation or restart the
+session indefinitely.
 
 ## Non-goals
 
@@ -152,6 +316,32 @@ The skill is acceptable when it produces the following behavior:
    full architectural analysis.
 5. A real same-class issue outside the safe PR boundary is reported as a
    follow-up instead of being silently fixed or ignored.
+6. One hundred duplicate comments for the same root cause form one defect class
+   and do not consume one automatic round per thread.
+7. A third patch cycle after two automatic rounds pauses for user direction
+   instead of continuing because the new request is adjacent to prior code.
+8. Feedback arriving near the bounded recheck deadline is classified without
+   resetting the observation window indefinitely.
+9. A new PR head invalidates earlier evidence for pass purposes and triggers
+   verification against the new snapshot.
+10. A new dependency or architecture choice produces build-versus-buy options
+    and does not modify production dependencies before user approval.
+11. Review convergence, QA verdict, and delivery state remain separate when one
+    succeeds and another is blocked or incomplete.
+12. After two patch rounds, one, two, or one hundred no-code duplicate replies
+    are dispositioned without a third round or a budget-exhaustion pause.
+13. Explicit direction resolves a named pause reason and resumes `PAUSED ->
+    OPEN` only when the frozen head, cutoff, and scope remain valid.
+14. A remote head change before verification or delivery invalidates readiness
+    and requires evidence bound to the new head before any delivery write.
+15. Feedback created before the immutable cutoff but fetched after it receives
+    the same classification on every run.
+16. Feedback admitted at the cutoff may cause a patch and closed-set
+    reconciliation, but cannot reopen admission for later feedback.
+17. A memoized strategy is reused unchanged and reopened when any material
+    comparison premise changes.
+18. Missing Traceknot capability blocks QA only when that handoff is selected
+    or required for the session's risk profile.
 
 ## Tool-routing experiment
 

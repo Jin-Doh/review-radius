@@ -51,6 +51,32 @@ refactoring.
 3. **Evidence before closure.** Classify candidates, test the invariant, and
    resolve threads only when the implementation state supports it.
 
+## Bounded review sessions
+
+Review Radius works in a bounded review session tied to the repository, PR,
+current head, and feedback visible when the session starts. Every actionable
+thread in that initial frozen batch, including non-blocking feedback, is
+classified and dispositioned in the current session. Later feedback does not
+silently expand that batch: same-class blocking feedback created by the cutoff
+may join while budget remains; later non-blocking feedback is queued; same-class
+blocking feedback created after the cutoff pauses the session for user
+direction, even on a frozen thread.
+
+The default automatic patch budget is **two rounds**. A two-pass review—before
+implementation and after implementation—is distinct from that budget. When a
+fix materially needs a new production dependency, nontrivial subsystem,
+public-contract change, or similar strategy choice, Review Radius presents
+build-versus-buy options: direct implementation, an existing dependency, new
+open source, or a follow-up. It does not change production dependencies without
+explicit user approval.
+
+An optional `Traceknot` QA handoff is available for ordinary sessions and is the
+required QA handoff for R2/R3 or recurring review loops. Review convergence and
+the QA verdict remain separate: convergence of the bounded feedback batch does
+not itself mean QA passed, delivery is complete, or Review Radius will invoke
+itself. Explicitly invoking `$review-radius` is the most reliable way to start a
+session.
+
 ## Install
 
 List the skills exposed by a checkout or published repository:

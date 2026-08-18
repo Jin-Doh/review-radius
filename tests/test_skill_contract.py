@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills/review-radius/SKILL.md"
+DESIGN = ROOT / "docs/design.md"
 NAVIGATION = ROOT / "skills/review-radius/references/code-navigation.md"
 EXPERIMENT = ROOT / "docs/experiments/2026-08-04-code-navigation-tool-routing.md"
 RESULTS = ROOT / "experiments/tool-routing/results/latest.json"
@@ -321,5 +322,589 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("agent-level scenario", report)
 
 
+    def test_design_and_skill_bind_review_sessions_to_a_frozen_snapshot(self):
+        design = DESIGN.read_text().lower()
+        skill = SKILL.read_text().lower()
+
+        for term in (
+            "review session",
+            "initial thread cursor",
+            "queued",
+            "current head",
+        ):
+            with self.subTest(term=term):
+                self.assertIn(term, design)
+                self.assertIn(term, skill)
+
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)new head.{0,180}(?:evidence|snapshot)",
+            )
+
+        for text in (design, skill):
+            for term in (
+                "server-comparable cutoff",
+                "createdat",
+                "high-water",
+                "closed-set reconciliation",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, text)
+        self.assertGreaterEqual(skill.count("headrefoid"), 4)
+        self.assertRegex(
+            skill,
+            r"(?is)headrefoid.{0,180}(?:verification|delivery|write)",
+        )
+
+    def test_design_and_skill_bound_rounds_and_do_not_count_churn_as_work(self):
+        design = DESIGN.read_text()
+        skill = SKILL.read_text()
+
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?i)\btwo\s+(?:automatic\s+)?(?:patch\s+)?rounds?\b",
+            )
+            self.assertRegex(text, r"(?i)two[- ]pass")
+            self.assertRegex(
+                text,
+                r"(?is)(?:duplicate|reply-only).{0,220}"
+                r"(?:does not|do not|without).{0,100}"
+                r"(?:consume|count).{0,80}round",
+            )
+
+    def test_design_and_skill_pause_expansion_and_keep_the_deadline_bounded(self):
+        design = DESIGN.read_text()
+        skill = SKILL.read_text()
+
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)new defect class.{0,160}\bpaus",
+            )
+            self.assertRegex(
+                text,
+                r"(?i)(?:fixed|bounded)\s+observation\s+deadline",
+            )
+            self.assertIn("deadline", text.lower())
+            self.assertRegex(
+                text,
+                r"(?is)(?:does not|do not|not).{0,80}reset",
+            )
+
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)transition\s+`PAUSED\s*->\s*OPEN`\s+only\s+while"
+                r".{0,120}head,\s+cutoff,\s+and\s+scope\s+assumptions"
+                r".{0,80}remain\s+valid.{0,80}otherwise\s+start\s+a\s+new"
+                r"\s+session",
+            )
+            lowered = text.lower()
+            self.assertRegex(lowered, r"paused\s+session")
+            self.assertIn("cannot", lowered)
+            self.assertIn("converged", lowered)
+            self.assertRegex(
+                text,
+                r"(?is)budget exhaustion pauses only when.{0,80}patch",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)(?:duplicate|reply-only).{0,160}"
+                r"(?:no-code|budget-exhaustion pause)",
+            )
+
+    def test_design_and_skill_keep_convergence_qa_and_delivery_independent(self):
+        design = DESIGN.read_text()
+        skill = SKILL.read_text()
+
+        for text in (design, skill):
+            lowered = text.lower()
+            for category in (
+                "review convergence",
+                "qa verdict",
+                "delivery state",
+            ):
+                with self.subTest(category=category):
+                    self.assertIn(category, lowered)
+            self.assertRegex(
+                text,
+                r"(?is)(?:three\s+independent|independent).{0,120}"
+                r"(?:outcomes|states|review convergence|qa verdict)",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)(?:fail|blocked|incomplete).{0,120}"
+                r"(?:never|cannot|does not).{0,100}"
+                r"(?:success|complete)",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)qa verdict does not.{0,80}(?:create|resolve)"
+                r".{0,80}review-convergence pause",
+            )
+            self.assertNotRegex(
+                text,
+                r"(?is)mandatory qa.{0,120}pauses? (?:the )?(?:review )?session",
+            )
+
+    def test_strategy_gate_and_optional_traceknot_semantics_are_explicit(self):
+        design = DESIGN.read_text()
+        skill = SKILL.read_text()
+
+        for text in (design, skill):
+            lowered = text.lower()
+            for term in (
+                "build-versus-buy",
+                "direct implementation",
+                "follow-up",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, lowered)
+            self.assertRegex(lowered, r"existing\s+(?:project\s+)?dependency")
+            self.assertRegex(lowered, r"new\s+open-source")
+            self.assertRegex(
+                text,
+                r"(?is)explicit\s+user\s+approval.{0,140}"
+                r"production\s+dependenc",
+            )
+
+        self.assertRegex(
+            skill,
+            r"(?is)(?:optional|not an unconditional dependency).{0,160}"
+            r"traceknot|traceknot.{0,160}(?:optional|unconditional)",
+        )
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)(?:required qa handoff.{0,120}`?R2`?/`?R3`?|"
+                r"`?R2`?/`?R3`?.{0,120}required qa handoff)"
+                r".{0,180}recurring.{0,80}review loop",
+            )
+        for text in (design, skill):
+            lowered = text.lower()
+            self.assertIn("selected or required", lowered)
+            self.assertRegex(
+                text,
+                r"(?is)unavailable\s+required\s+capability.{0,100}`BLOCKED`",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)(?:available\s+capability|capability\s+exists).{0,180}"
+                r"(?:unfinished|does\s+not\s+reach).{0,120}`INCOMPLETE`",
+            )
+        self.assertNotRegex(
+            skill,
+            r"(?i)\b(?:always|automatically)\s+(?:run|invoke|use)\s+traceknot\b",
+        )
+
+        for text in (design, skill):
+            lowered = text.lower()
+            self.assertIn("material comparison premise", lowered)
+            reopen = re.search(
+                r"(?is)reopen\s+(?:the\s+)?decision\s+when"
+                r"(?P<premises>.*?)materially\s+change",
+                text,
+            )
+            self.assertIsNotNone(reopen)
+            invalidation_premises = reopen.group("premises").lower()
+            for premise in (
+                "implementation size",
+                "requirement",
+                "maintenance",
+                "security",
+                "license",
+                "dependency",
+                "performance",
+                "integration",
+                "replacement",
+            ):
+                with self.subTest(premise=premise):
+                    self.assertIn(premise, invalidation_premises)
+            self.assertRegex(
+                text,
+                r"(?is)reuse it only while.{0,120}premises remain valid",
+            )
+        self.assertRegex(
+            skill,
+            r"(?is)neither selected nor required.{0,180}"
+            r"traceknot absence alone does not block",
+        )
+
+    def test_pushed_head_verification_precedes_review_writes(self):
+        design = DESIGN.read_text()
+        skill = SKILL.read_text()
+
+        for text in (design, skill):
+            lowered = text.lower()
+            for term in (
+                "pre-push",
+                "after push",
+                "candidate evidence",
+                "cannot satisfy",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, lowered)
+            self.assertRegex(lowered, r"pushed\s+sha")
+        self.assertRegex(
+            skill,
+            r"(?is)after push.{0,700}(?:rerun|verify).{0,180}"
+            r"(?:focused|canonical)",
+        )
+        self.assertRegex(
+            skill,
+            r"(?is)before every github write.{0,120}"
+            r"each reaction.{0,80}each reply.{0,80}resolution",
+        )
+        intake = re.search(
+            r"(?is)10\. validate reaction dispositions.*?(?=\n11\.)",
+            skill,
+        )
+        response = re.search(
+            r"(?is)13\. push, rebind, and verify.*?(?=\n14\.)",
+            skill,
+        )
+        self.assertIsNotNone(intake)
+        self.assertIsNotNone(response)
+        self.assertNotRegex(
+            intake.group(0),
+            r"(?im)^\s*-\s*(?:add|write|react)\b",
+        )
+        response_text = response.group(0)
+        normalized_response = re.sub(r"\s+", " ", response_text)
+        self.assertLess(
+            normalized_response.index("Only after the equality check passes"),
+            normalized_response.index("clean detached or temporary worktree"),
+        )
+        self.assertLess(
+            normalized_response.index("clean detached or temporary worktree"),
+            normalized_response.index("Rerun the required focused verification"),
+        )
+        self.assertLess(
+            response_text.index("After push, read the remote head"),
+            response_text.index("Add the recorded reactions"),
+        )
+        self.assertIn("Before every GitHub write", normalized_response)
+        self.assertIn(
+            "each reaction, each reply, and each resolution",
+            normalized_response,
+        )
+        self.assertIn(
+            "Do not reuse one head reread as the guard for a later mutation",
+            normalized_response,
+        )
+        self.assertIn(
+            "Add the recorded reactions only after the per-write head reread and "
+            "the pushed-head verification",
+            normalized_response,
+        )
+        normalized_design = re.sub(r"\s+", " ", design.lower())
+        self.assertIn(
+            "every reaction, reply, or resolution write; do not reuse one reread",
+            normalized_design,
+        )
+        self.assertRegex(
+            normalized_response,
+            r"(?is)mismatch.{0,120}rebind and reverify before that write",
+        )
+        self.assertRegex(
+            normalized_design,
+            r"(?is)mismatch.{0,120}rebind and reverify before that write",
+        )
+        self.assertIn(
+            "require it to equal the recorded pushed commit SHA",
+            normalized_response,
+        )
+        self.assertRegex(
+            normalized_response,
+            r"(?is)if it differs.{0,180}"
+            r"invalidate delivery and qa readiness.{0,120}"
+            r"(?:rebind|verification)",
+        )
+        self.assertIn("Reactions are dispositions during intake", design)
+
+    def test_pushed_head_verification_is_snapshot_bound(self):
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        for text in (design, skill):
+            for term in (
+                "any uncommitted edits",
+                "related, generated",
+                "clean detached or temporary worktree",
+                "recorded",
+                "sha",
+                "preserve the source worktree",
+                "not snapshot-bound",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, text)
+
+    def test_initial_admission_and_later_queue_are_explicit(self):
+        contracts = (
+            (
+                DESIGN,
+                (
+                    "all actionable threads in the initial frozen batch",
+                    "initial non-blocking feedback",
+                    "later non-blocking comments and replies are queued",
+                    "created after the cutoff",
+                    "named pause",
+                    "navigation boundaries, not admission proof",
+                    "later-timestamped item fetched during the initial read",
+                ),
+            ),
+            (
+                SKILL,
+                (
+                    "every actionable thread in the frozen batch",
+                    "initial non-blocking feedback",
+                    "`queued`: later non-blocking",
+                    "pause",
+                    "cursor membership as admission",
+                    "fetched during the initial read",
+                ),
+            ),
+        )
+        for path, terms in contracts:
+            text = re.sub(r"\s+", " ", path.read_text().lower())
+            for term in terms:
+                with self.subTest(path=path.name, term=term):
+                    self.assertIn(term, text)
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        self.assertRegex(
+            design,
+            r"(?is)initial frozen batch only when its immutable `createdat` "
+            r"is at or before the cutoff.{0,180}"
+            r"later-timestamped item fetched during the initial read remains "
+            r"post-cutoff feedback",
+        )
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        self.assertRegex(
+            skill,
+            r"(?is)initial batch only when its own `createdat` is at or before "
+            r"the cutoff.{0,180}later timestamp is classified as post-cutoff",
+        )
+
+    def test_recheck_deadline_has_a_future_minimum(self):
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        for text in (design, skill):
+            self.assertRegex(
+                text,
+                r"(?is)deadline.{0,100}at least five minutes in the future",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)deadline.{0,100}non[- ]resetting",
+            )
+
+    def test_no_code_delivery_covers_all_explanation_writes(self):
+        for path in (SKILL, DESIGN):
+            text = re.sub(r"\s+", " ", path.read_text().lower())
+            for term in (
+                "explanation",
+                "resolution",
+            ):
+                with self.subTest(path=path.name, term=term):
+                    self.assertIn(term, text)
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        self.assertRegex(
+            skill,
+            r"(?is)no-code disposition.{0,180}"
+            r"(?:reaction, reply, or resolution|explanation-only response)",
+        )
+        self.assertRegex(
+            skill,
+            r"(?is)no-code disposition.{0,180}fresh `headrefoid` read "
+            r"confirms that no patch is required.{0,180}"
+            r"current-head no-code verification path is complete",
+        )
+        self.assertIn(
+            "cite the post-push gate for a patch, or the current-head no-code "
+            "verification for an explanation-only response",
+            skill,
+        )
+        design = re.sub(r"\s+", " ", DESIGN.read_text().lower())
+        self.assertIn(
+            "no-code dispositions use a fresh current-head verification path "
+            "for reactions, explanation replies, and resolutions",
+            design,
+        )
+        self.assertIn(
+            "patch replies cite the post-push gate; explanation-only replies "
+            "cite the current-head no-code verification",
+            design,
+        )
+
+    def test_locale_summaries_match_initial_and_post_cutoff_admission(self):
+        summaries = (
+            (README, ("initial frozen batch", "same-class", "after the cutoff")),
+            (README_KO, ("초기 동결 묶음", "컷오프 이후", "일시 중지")),
+            (README_ZH_CN, ("初始冻结批次", "截止时间后", "暂停会话")),
+        )
+        for path, terms in summaries:
+            text = re.sub(r"\s+", " ", path.read_text().lower())
+            for term in terms:
+                with self.subTest(path=path.name, term=term):
+                    self.assertIn(term.lower(), text)
+
+    def test_risk_levels_define_traceknot_selection(self):
+        design = DESIGN.read_text().lower()
+        skill = SKILL.read_text().lower()
+        for text in (design, skill):
+            for level in ("r0", "r1", "r2", "r3"):
+                with self.subTest(level=level):
+                    self.assertIn(f"`{level}`", text)
+            self.assertRegex(
+                text,
+                r"(?is)r3.{0,240}(?:supersedes|higher level).{0,120}"
+                r"r2",
+            )
+            self.assertRegex(
+                text,
+                r"(?is)traceknot.{0,120}(?:mandatory|required).{0,120}"
+                r"r2",
+            )
+            for term in (
+                "release, migration, destructive operation",
+                "production infrastructure",
+                "unknown material scope",
+                "public-contract",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, text)
+            self.assertRegex(
+                text,
+                r"(?is)(?:post-cutoff|same-class blocking).{0,160}"
+                r"(?:after the cutoff|pause|follow-up)",
+            )
+
+    def test_late_replies_use_their_own_cutoff_timestamp(self):
+        design = DESIGN.read_text().lower()
+        skill = SKILL.read_text().lower()
+        for text in (design, skill):
+            normalized = re.sub(r"\s+", " ", text)
+            for term in (
+                "each newly observed comment or reply",
+                "frozen parent thread does not make a late reply current",
+                "same-class blocking comment or reply",
+                "after the cutoff",
+                "non-blocking comments and replies",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, normalized)
+            self.assertRegex(
+                normalized,
+                r"(?is)same-class blocking comment or reply.{0,180}"
+                r"(?:named `?paused|named pause|follow-up)",
+            )
+
+    def test_openai_short_description_matches_distribution_length_contract(self):
+        openai = OPENAI.read_text()
+        match = re.search(r'(?m)^  short_description: "([^"]+)"$', openai)
+        self.assertIsNotNone(match)
+        self.assertGreaterEqual(len(match.group(1)), 25)
+        self.assertLessEqual(len(match.group(1)), 64)
+
+    def test_review_churn_frontmatter_and_openai_prompt_share_session_contract(self):
+        skill = SKILL.read_text()
+        frontmatter = re.match(r"^---\n(.*?)\n---\n", skill, re.DOTALL)
+        self.assertIsNotNone(frontmatter)
+        description = frontmatter.group(1)
+        for pattern in (
+            r"(?i)repeated\s+github\s+pr\s+review/fix\s+cycles",
+            r"(?i)github\s+pr\s+review\s+churn",
+            r"(?i)non-converging\s+github\s+pr\s+feedback",
+        ):
+            self.assertRegex(description, pattern)
+
+        self.assertNotRegex(
+            description,
+            r"(?i)\b(?:general|broad|repository-wide)\s+"
+            r"(?:code|repository)\s+review\b",
+        )
+        self.assertNotRegex(
+            skill,
+            r"(?i)\b(?:always|automatically)\s+(?:run|invoke)\s+"
+            r"\$?review-radius\b",
+        )
+        self.assertRegex(
+            skill,
+            r"(?is)skill cannot.{0,80}(?:monitor|dispatch|call|invoke)"
+            r".{0,80}itself.{0,80}not\s+selected",
+        )
+
+        openai = OPENAI.read_text()
+        prompt_match = re.search(
+            r'(?m)^  default_prompt:\s*"([^"]+)"\s*$',
+            openai,
+        )
+        self.assertIsNotNone(prompt_match)
+        prompt = prompt_match.group(1).lower()
+        for term in (
+            "$review-radius",
+            "repo",
+            "pr",
+            "head",
+            "initial thread cursor",
+            "every actionable thread",
+            "initial non-blocking feedback",
+            "queue only later non-blocking feedback",
+            "non-blocking",
+            "queue",
+            "new defect class",
+            "strategy decision",
+            "duplicate",
+            "round",
+            "new head",
+            "new evidence",
+            "qa verdict",
+            "delivery",
+            "independent",
+        ):
+            with self.subTest(term=term):
+                self.assertIn(term, prompt)
+
+    def test_locale_summaries_expose_the_bounded_session_contract(self):
+        markers = {
+            README: (
+                "## Bounded review sessions",
+                "default automatic patch budget is **two rounds**",
+                "Traceknot",
+                "QA handoff",
+                "Review convergence and",
+                "QA verdict remain separate",
+                "Explicitly invoking `$review-radius` is the most reliable",
+            ),
+            README_KO: (
+                "## 제한된 리뷰 세션",
+                "기본 자동 패치 예산은 **두 라운드**",
+                "Traceknot",
+                "QA 핸드오프",
+                "리뷰 수렴과 QA 판정은 서로",
+                "별개입니다",
+                "$review-radius",
+                "명시적으로 호출",
+            ),
+            README_ZH_CN: (
+                "## 有边界的审查会话",
+                "默认自动补丁预算为 **两轮**",
+                "Traceknot",
+                "QA 交接",
+                "审查收敛和 QA 判定彼此独立",
+                "明确调用 `$review-radius` 是",
+            ),
+        }
+        for path, phrases in markers.items():
+            text = path.read_text()
+            with self.subTest(locale=path.name):
+                for phrase in phrases:
+                    self.assertIn(phrase, text)
+                self.assertNotRegex(
+                    text,
+                    r"(?i)\b(?:always|automatically)\s+"
+                    r"(?:invoke|call|run)\s+\$?review-radius\b",
+                )
 if __name__ == "__main__":
     unittest.main()
