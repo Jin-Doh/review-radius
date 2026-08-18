@@ -95,26 +95,29 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      `createdAt` or equivalent immutable arrival metadata, and outdated or
      resolved state, along with the session cursor and snapshot.
    - Refetch known thread IDs as well as pages after the initial cursor so a
-     reply on an existing thread is classified against the same cutoff.
+     reply on an existing thread is classified against the same cutoff. Treat
+     each newly observed comment or reply as its own arrival for cutoff
+     classification; a frozen parent thread does not make a late reply current.
    - Cluster duplicate and reply-only feedback by root cause. Keep every thread
      ID and disposition visible, but do not spend one automatic round per
      duplicate or reply.
    - Ignore resolved or outdated threads by default, but include them when they
      provide evidence that the same defect still exists at the current head.
 3. Classify incoming feedback without silently extending the session.
-   - `current`: a thread in the frozen batch, or same-class blocking feedback
-     created by the server-comparable cutoff while budget remains and the
-     behavior surface does not materially expand.
-   - `queued`: later non-blocking feedback, including feedback that can wait for
-     a later session.
+   - `current`: a frozen-batch thread whose blocking comments and replies were
+     created by the cutoff, or same-class blocking feedback created by the
+     server-comparable cutoff while budget remains and the behavior surface
+     does not materially expand.
+   - `queued`: later non-blocking comments or replies, including feedback on a
+     frozen thread that can wait for a later session.
    - Duplicate, reply-only, and other no-code feedback is always dispositioned
      without consuming a round or triggering budget-exhaustion pause, whether
      current or queued.
    - `pause`: a new defect class, material behavior or scope expansion, new
      public-contract or production-dependency decision, a same-class blocking
-     thread created after the cutoff, or a required patch after the automatic
-     budget is exhausted. Pause for user direction; do not turn adjacency into
-     automatic authorization.
+     comment or reply created after the cutoff (even on a frozen thread), or a
+     required patch after the automatic budget is exhausted. Pause for user
+     direction; do not turn adjacency into automatic authorization.
    - A paused session cannot be `CONVERGED` until every named review pause
      reason is resolved or moved to a new session. The QA verdict does not
      create or resolve a review-convergence pause; it remains independent.
@@ -297,16 +300,18 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
     - At the fixed observation deadline, inspect the current head, known thread
       IDs, pages after the frozen cursor, new comments, duplicate clusters,
       review decision, mergeability, and CI or required-check status.
-    - Classify arrivals by their immutable `createdAt` metadata against the
-      server-comparable cutoff. The cutoff and deadline do not reset because
-      feedback was fetched late or arrived near them.
-    - Same-class blocking feedback created by the cutoff may join only while
-      patch budget remains. Same-class blocking feedback created after the
-      cutoff cannot join this session: record it as a named `PAUSED` reason
-      and assign it to a new session or explicit follow-up. Non-blocking
-      feedback is queued. A new defect class, material strategy decision, or
-      required patch after exhausted budget also pauses the review session; QA
-      retains its independent verdict.
+    - Classify each newly observed comment or reply by its immutable
+      `createdAt` metadata against the server-comparable cutoff. The cutoff and
+      deadline do not reset because feedback was fetched late or arrived near
+      them.
+    - Same-class blocking comments or replies created by the cutoff may join
+      only while patch budget remains. A same-class blocking comment or reply
+      created after the cutoff cannot join this session, even on a frozen
+      thread: record it as a named `PAUSED` reason and assign it to a new
+      session or explicit follow-up. Non-blocking comments and replies are
+      queued. A new defect class, material strategy decision, or required patch
+      after exhausted budget also pauses the review session; QA retains its
+      independent verdict.
     - If admitted feedback causes a patch and a new head, run closed-set
       reconciliation for that admitted set and the new head. Revalidate QA and
       delivery readiness, but never admit feedback created after the original

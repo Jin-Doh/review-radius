@@ -625,6 +625,26 @@ class SkillContractTest(unittest.TestCase):
                 r"(?:after the cutoff|pause|follow-up)",
             )
 
+    def test_late_replies_use_their_own_cutoff_timestamp(self):
+        design = DESIGN.read_text().lower()
+        skill = SKILL.read_text().lower()
+        for text in (design, skill):
+            normalized = re.sub(r"\s+", " ", text)
+            for term in (
+                "each newly observed comment or reply",
+                "frozen parent thread does not make a late reply current",
+                "same-class blocking comment or reply",
+                "after the cutoff",
+                "non-blocking comments and replies",
+            ):
+                with self.subTest(term=term):
+                    self.assertIn(term, normalized)
+            self.assertRegex(
+                normalized,
+                r"(?is)same-class blocking comment or reply.{0,180}"
+                r"(?:named `?paused|named pause|follow-up)",
+            )
+
     def test_openai_short_description_matches_distribution_length_contract(self):
         openai = OPENAI.read_text()
         match = re.search(r'(?m)^  short_description: "([^"]+)"$', openai)
