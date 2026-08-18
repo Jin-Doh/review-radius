@@ -574,6 +574,14 @@ class SkillContractTest(unittest.TestCase):
         response_text = response.group(0)
         normalized_response = re.sub(r"\s+", " ", response_text)
         self.assertLess(
+            normalized_response.index("Only after the equality check passes"),
+            normalized_response.index("clean detached or temporary worktree"),
+        )
+        self.assertLess(
+            normalized_response.index("clean detached or temporary worktree"),
+            normalized_response.index("Rerun the required focused verification"),
+        )
+        self.assertLess(
             response_text.index("After push, read the remote head"),
             response_text.index("Add the recorded reactions"),
         )
@@ -605,7 +613,8 @@ class SkillContractTest(unittest.TestCase):
             for term in (
                 "unrelated uncommitted edits",
                 "clean detached or temporary worktree",
-                "recorded sha",
+                "recorded",
+                "sha",
                 "preserve the source worktree",
                 "not snapshot-bound",
             ):
