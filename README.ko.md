@@ -11,6 +11,7 @@ Review Radius는 리뷰 코멘트를 출발점으로 삼아 같은 원인에서 
 깨진 불변 조건(invariant)을 도출하고, 관련 코드 영역을 확인한 뒤, 구현과
 검증 결과가 뒷받침될 때 리뷰를 마무리합니다. 저장소와 설치 가능한 스킬,
 호출 ID는 모두 `review-radius`입니다.
+[![skills.sh](https://skills.sh/b/Jin-Doh/review-radius)](https://skills.sh/Jin-Doh/review-radius/review-radius)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [설계](docs/design.md) ·
 [실험](docs/experiments/2026-08-04-code-navigation-tool-routing.md) ·
@@ -61,11 +62,30 @@ Review Radius의 자동 호출이 보장되는 것은 아닙니다. 세션을 �
 
 ## 설치
 
+Review Radius는 [skills.sh](https://skills.sh/Jin-Doh/review-radius/review-radius)에
+`review-radius` 스킬로 등록되어 있습니다.
+원본 저장소: [Jin-Doh/review-radius](https://github.com/Jin-Doh/review-radius).
+
+저장소에서 제공하는 스킬을 확인합니다.
+
 ```sh
-npx skills add https://github.com/Jin-Doh/review-radius \
+npx skills add Jin-Doh/review-radius --list
+```
+
+Codex에 전역 설치합니다.
+
+```sh
+npx skills add Jin-Doh/review-radius \
   --skill review-radius \
   --agent codex \
+  --global \
   -y
+```
+
+프로젝트별로 설치하려면 `--global`을 생략합니다.
+
+```sh
+npx skills add Jin-Doh/review-radius --skill review-radius --agent codex -y
 ```
 
 로컬 체크아웃에서는 다음과 같이 설치할 수 있습니다.

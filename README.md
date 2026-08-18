@@ -10,6 +10,7 @@ Review Radius turns a review comment into a bounded audit of the defect class it
 reveals. It validates the feedback, derives the violated invariant, checks
 credible related surfaces, and closes the review with evidence. The installable
 skill, command, and repository share one name: `review-radius`.
+[![skills.sh](https://skills.sh/b/Jin-Doh/review-radius)](https://skills.sh/Jin-Doh/review-radius/review-radius)
 
 [한국어](README.ko.md) · [简体中文](README.zh-CN.md) ·
 [Design](docs/design.md) ·
@@ -79,19 +80,30 @@ session.
 
 ## Install
 
-List the skills exposed by a checkout or published repository:
+Review Radius is published on [skills.sh](https://skills.sh/Jin-Doh/review-radius/review-radius)
+as the `review-radius` skill.
+Source repository: [Jin-Doh/review-radius](https://github.com/Jin-Doh/review-radius).
+
+List the skills exposed by the repository:
 
 ```sh
-npx skills add https://github.com/Jin-Doh/review-radius --list
+npx skills add Jin-Doh/review-radius --list
 ```
 
-Install Review Radius for Codex:
+Install Review Radius globally for Codex:
 
 ```sh
-npx skills add https://github.com/Jin-Doh/review-radius \
+npx skills add Jin-Doh/review-radius \
   --skill review-radius \
   --agent codex \
+  --global \
   -y
+```
+
+For project-local installation, omit `--global`:
+
+```sh
+npx skills add Jin-Doh/review-radius --skill review-radius --agent codex -y
 ```
 
 For local development, use the checkout path:
