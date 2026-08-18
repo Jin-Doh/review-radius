@@ -207,9 +207,9 @@ Verification before commit and push is candidate evidence because the remote
 pull request still points at the previous head. Record the exact local commit
 SHA that will be pushed. After push, read the remote head and require equality
 with that recorded SHA before binding evidence or rerunning verification. If
-the OIDs differ, pause delivery and QA readiness, do not bind local evidence to
-another contributor's head, and fetch/rebind that head before rerunning the
-complete verification.
+the OIDs differ, invalidate delivery and QA readiness, do not bind local
+evidence to another contributor's head, and fetch/rebind that head before
+rerunning the complete verification.
 
 Only after the equality check passes, bind the session to the pushed SHA and
 rerun the required focused verification and canonical gate against that SHA.

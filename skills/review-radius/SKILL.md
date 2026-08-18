@@ -270,8 +270,8 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       run. If environment restrictions break hooks, rerun the same normal push
       in an authorized environment instead of bypassing verification.
     - After push, read the remote head again and require it to equal the
-      recorded pushed commit SHA before binding evidence. If it differs, mark
-      delivery and QA readiness `PAUSED`, do not bind local evidence to the
+      recorded pushed commit SHA before binding evidence. If it differs,
+      invalidate delivery and QA readiness, do not bind local evidence to the
       other contributor's head, and fetch/rebind that head before rerunning the
       complete verification.
     - Only after the equality check passes, bind the session to the pushed SHA.

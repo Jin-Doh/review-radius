@@ -588,7 +588,8 @@ class SkillContractTest(unittest.TestCase):
         )
         self.assertRegex(
             normalized_response,
-            r"(?is)if it differs.{0,180}(?:paused|pause).{0,120}"
+            r"(?is)if it differs.{0,180}"
+            r"invalidate delivery and qa readiness.{0,120}"
             r"(?:rebind|verification)",
         )
         self.assertIn("Reactions are dispositions during intake", design)
