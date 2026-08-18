@@ -80,11 +80,11 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
    - Confirm the active repository, worktree, branch, and PR head. Create the
      Session ID, record the initial head, and set a server-comparable feedback
      cutoff and fixed recheck deadline before reading feedback.
-   - Freeze the initial thread cursor and IDs for this session. Record
-     per-comment `createdAt` metadata or an equivalent immutable high-water
-     mark. A new head created by an authorized patch is a new snapshot that
-     requires fresh evidence; it does not silently inherit pass claims from the
-     old head.
+   - Freeze the initial thread cursor and IDs for this session, but do not use
+     cursor membership as admission. Include a comment or reply in the initial
+     batch only when its own `createdAt` is at or before the cutoff; anything
+     fetched during the initial read with a later timestamp is classified as
+     post-cutoff feedback and cannot become `current` through the frozen IDs.
    - Confirm `gh auth status` immediately before any GitHub write. Reading
      public or already-authorized review state does not authorize a write.
 
@@ -219,9 +219,9 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
     - Record the intended reaction and check existing reactions where practical
       to avoid duplicates, but defer the GitHub reaction write until the
       post-push response phase whenever this session produces a patch.
-    - For a no-code disposition, a reaction may be written only after a fresh
-      head read confirms that no patch is required and the no-code verification
-      path is current.
+    - For a no-code disposition, a reaction, reply, or resolution may be written
+      only after a fresh `headRefOid` read confirms that no patch is required
+      and the current-head no-code verification path is complete.
     - GitHub writes remain subject to explicit user authorization or a request
       for end-to-end review response; a review session never grants authority
       by itself.
@@ -290,11 +290,12 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       as the guard for a later mutation. A mismatch invalidates response
       readiness; rebind and reverify before that write.
     - Add the recorded reactions only after the per-write head reread and the
-      pushed-head verification. For a no-code disposition, use the separately
-      verified no-code path from step 10; never react from stale pre-patch
-      evidence.
+      pushed-head verification for a patch session. For a no-code disposition,
+      use the current-head no-code path from step 10; never react from stale
+      pre-patch evidence.
     - Reply to each addressed thread with the direct fix, same-class audit
-      result, supporting post-push gate, and snapshot identity.
+      result, and snapshot identity. Cite the post-push gate for a patch, or
+      the current-head no-code verification for an explanation-only response.
     - Resolve only threads whose requested change or explanation is complete.
       Leave ambiguous, invalid, uncertain, or blocked threads unresolved with a
       clear evidence-based reply.

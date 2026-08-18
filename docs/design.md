@@ -69,6 +69,11 @@ classes. Record:
 | Delivery state | `NOT_STARTED`, `READY`, `REPLIED`, `RESOLVED`, or `PUSHED`. |
 
 <!-- markdownlint-enable MD013 -->
+The initial cursor and IDs are navigation boundaries, not admission proof.
+Include a comment or reply in the initial frozen batch only when its immutable
+`createdAt` is at or before the cutoff. A later-timestamped item fetched during
+the initial read remains post-cutoff feedback and cannot become `current` merely
+because its thread ID was frozen.
 
 One automatic round is `analyze -> plan -> patch -> verify -> respond ->
 bounded recheck`. A duplicate classification, reply-only response, or
@@ -228,11 +233,13 @@ pushed-head QA obligation alone.
 
 Reactions are dispositions during intake, not GitHub mutations. For a session
 that produces a patch, add them only after pushed-head verification succeeds
-and their own immediate remote-head reread. No-code dispositions use a
-separately verified no-code path. Re-read the remote head immediately before
-every reaction, reply, or resolution write; do not reuse one reread as the guard
-for a later mutation. A mismatch invalidates response readiness; rebind and
-reverify before that write.
+and their own immediate remote-head reread. No-code dispositions use a fresh
+current-head verification path for reactions, explanation replies, and
+resolutions. Re-read the remote head immediately before every reaction, reply,
+or resolution write; do not reuse one reread as the guard for a later mutation.
+A mismatch invalidates response readiness; rebind and reverify before that
+write. Patch replies cite the post-push gate; explanation-only replies cite the
+current-head no-code verification.
 Delivery completion and QA completion therefore both refer to the pushed head,
 not merely to the local commit before push.
 

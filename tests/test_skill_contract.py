@@ -649,6 +649,8 @@ class SkillContractTest(unittest.TestCase):
                     "later non-blocking comments and replies are queued",
                     "created after the cutoff",
                     "named pause",
+                    "navigation boundaries, not admission proof",
+                    "later-timestamped item fetched during the initial read",
                 ),
             ),
             (
@@ -657,8 +659,9 @@ class SkillContractTest(unittest.TestCase):
                     "every actionable thread in the frozen batch",
                     "initial non-blocking feedback",
                     "`queued`: later non-blocking",
-                    "created after the cutoff",
                     "pause",
+                    "cursor membership as admission",
+                    "fetched during the initial read",
                 ),
             ),
         )
@@ -667,6 +670,22 @@ class SkillContractTest(unittest.TestCase):
             for term in terms:
                 with self.subTest(path=path.name, term=term):
                     self.assertIn(term, text)
+
+    def test_no_code_delivery_covers_all_explanation_writes(self):
+        for path in (SKILL, DESIGN):
+            text = re.sub(r"\s+", " ", path.read_text().lower())
+            for term in (
+                "explanation",
+                "resolution",
+            ):
+                with self.subTest(path=path.name, term=term):
+                    self.assertIn(term, text)
+        skill = re.sub(r"\s+", " ", SKILL.read_text().lower())
+        self.assertRegex(
+            skill,
+            r"(?is)no-code disposition.{0,180}"
+            r"(?:reaction, reply, or resolution|explanation-only response)",
+        )
 
     def test_locale_summaries_match_initial_and_post_cutoff_admission(self):
         summaries = (
