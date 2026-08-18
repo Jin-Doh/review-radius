@@ -576,7 +576,13 @@ class SkillContractTest(unittest.TestCase):
             response_text.index("After push, read the remote head"),
             response_text.index("Add the recorded reactions"),
         )
-        self.assertIn("before any GitHub write", response_text)
+        normalized_response = re.sub(r"\s+", " ", response_text)
+        self.assertIn(
+            "Add the recorded reactions only after the pushed-head verification "
+            "succeeds",
+            normalized_response,
+        )
+        self.assertIn("before any GitHub write", normalized_response)
         self.assertIn("Reactions are dispositions during intake", design)
 
     def test_risk_levels_define_traceknot_selection(self):
