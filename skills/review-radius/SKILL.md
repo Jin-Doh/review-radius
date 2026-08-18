@@ -278,6 +278,7 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       invalidate delivery and QA readiness, do not bind local evidence to the
       other contributor's head, and fetch/rebind that head before rerunning the
       complete verification.
+    - Only after the equality check passes, bind the session to the pushed SHA.
     - If the source worktree has any uncommitted edits—including related,
       generated, or hook-created changes—create a clean detached or temporary
       worktree at the recorded pushed SHA. Preserve the source worktree; dirty
