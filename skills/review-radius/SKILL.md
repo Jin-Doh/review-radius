@@ -285,10 +285,11 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       pushed SHA from that clean worktree when the source worktree was dirty;
       otherwise use the clean source worktree. Pre-push evidence remains
       informative but cannot satisfy the pushed-head QA obligation by itself.
-    - After pushed-head verification succeeds, re-read `headRefOid`
-      immediately before any GitHub write, including reactions. A mismatch
-      invalidates response readiness; rebind and reverify before writing.
-    - Add the recorded reactions only after that final head reread and the
+    - Before every GitHub write—each reaction, each reply, and each
+      resolution—re-read `headRefOid` immediately. Do not reuse one head reread
+      as the guard for a later mutation. A mismatch invalidates response
+      readiness; rebind and reverify before that write.
+    - Add the recorded reactions only after the per-write head reread and the
       pushed-head verification. For a no-code disposition, use the separately
       verified no-code path from step 10; never react from stale pre-patch
       evidence.

@@ -554,8 +554,8 @@ class SkillContractTest(unittest.TestCase):
         )
         self.assertRegex(
             skill,
-            r"(?is)re-read\s+`?headrefoid`?.{0,120}"
-            r"before any github write, including reactions",
+            r"(?is)before every github write.{0,120}"
+            r"each reaction.{0,80}each reply.{0,80}resolution",
         )
         intake = re.search(
             r"(?is)10\. validate reaction dispositions.*?(?=\n11\.)",
@@ -585,14 +585,24 @@ class SkillContractTest(unittest.TestCase):
             response_text.index("After push, read the remote head"),
             response_text.index("Add the recorded reactions"),
         )
+        self.assertIn("Before every GitHub write", normalized_response)
         self.assertIn(
-            "immediately before any GitHub write, including reactions",
+            "each reaction, each reply, and each resolution",
             normalized_response,
         )
         self.assertIn(
-            "Add the recorded reactions only after that final head reread and "
+            "Do not reuse one head reread as the guard for a later mutation",
+            normalized_response,
+        )
+        self.assertIn(
+            "Add the recorded reactions only after the per-write head reread and "
             "the pushed-head verification",
             normalized_response,
+        )
+        normalized_design = re.sub(r"\s+", " ", design.lower())
+        self.assertIn(
+            "every reaction, reply, or resolution write; do not reuse one reread",
+            normalized_design,
         )
         self.assertIn(
             "require it to equal the recorded pushed commit SHA",

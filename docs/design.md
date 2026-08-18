@@ -228,10 +228,11 @@ pushed-head QA obligation alone.
 
 Reactions are dispositions during intake, not GitHub mutations. For a session
 that produces a patch, add them only after pushed-head verification succeeds
-and the final remote-head reread immediately before the reaction write. No-code
-dispositions use a separately verified no-code path. Re-read the remote head
-immediately before every reply, reaction, or resolution write. A mismatch
-invalidates response readiness; rebind and reverify before any GitHub write.
+and their own immediate remote-head reread. No-code dispositions use a
+separately verified no-code path. Re-read the remote head immediately before
+every reaction, reply, or resolution write; do not reuse one reread as the guard
+for a later mutation. A mismatch invalidates response readiness; rebind and
+reverify before that write.
 Delivery completion and QA completion therefore both refer to the pushed head,
 not merely to the local commit before push.
 
