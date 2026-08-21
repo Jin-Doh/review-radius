@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills/review-radius/SKILL.md"
 CAMPAIGN = ROOT / "skills/review-radius/references/review-campaign.md"
+DESIGN = ROOT / "docs/design.md"
 
 
 class ReviewCampaignContractTest(unittest.TestCase):
@@ -38,6 +39,24 @@ class ReviewCampaignContractTest(unittest.TestCase):
         self.assertIn("Two consecutive patch-producing Review Sessions", campaign)
         self.assertIn("material strategy premise is disproved", campaign)
         self.assertIn("Repeated `MECHANISM_DEFECT` evidence", skill)
+
+    def test_session_pauses_do_not_hide_campaign_convergence_state(self):
+        skill = SKILL.read_text()
+        campaign = CAMPAIGN.read_text()
+        design = DESIGN.read_text()
+
+        self.assertIn("Ordinary feedback that needs user direction pauses only the active Review", skill)
+        self.assertIn("Ordinary Review Session pauses do not mutate the campaign state", campaign)
+        self.assertIn("`CONVERGED`", campaign)
+        self.assertIn("original PR goal and safe boundary are complete", campaign)
+        self.assertIn("Review-campaign model", design)
+
+    def test_three_mechanism_findings_require_multiple_patch_sessions(self):
+        campaign = CAMPAIGN.read_text()
+
+        self.assertIn("across at least two patch-producing Review Sessions", campaign)
+        self.assertIn("do not count three findings first observed in one patch-producing Review", campaign)
+        self.assertIn("one incomplete patch", campaign)
 
     def test_paused_campaign_forbids_patch_and_reviewer_retrigger(self):
         text = SKILL.read_text() + CAMPAIGN.read_text()

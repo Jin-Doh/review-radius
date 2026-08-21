@@ -42,13 +42,16 @@ Record:
 | Finding origins | Separate product defects from remediation-mechanism defects. |
 | Strategy memo and premises | Preserve why direct implementation, reuse, dependency, or follow-up was chosen. |
 | Semantic surface growth | Record newly implemented language, protocol, parser, dispatch, persistence, concurrency, or migration semantics. |
-| Campaign convergence | `OPEN`, `PAUSED`, `BLOCKED`, or `STOPPED`. |
+| Campaign convergence | `OPEN`, `CONVERGED`, `PAUSED`, `BLOCKED`, or `STOPPED`. `CONVERGED` means the original PR goal and safe boundary are complete with no unresolved campaign pause reason; `STOPPED` means the campaign was intentionally ended without convergence. |
 | Pause reasons | Name the decision required before another patch or reviewer trigger. |
 
 <!-- markdownlint-enable MD013 -->
 
 A Session ID may change. The campaign identity does not change while the pull
 request and its original goal remain the same.
+Ordinary Review Session pauses do not mutate the campaign state. The campaign
+becomes `PAUSED` only for a named campaign-level strategy pause; a session may
+be `PAUSED` while the campaign remains `OPEN`.
 
 ## Finding-origin taxonomy
 
@@ -114,7 +117,8 @@ Pause with `NON_CONVERGING_REMEDIATION_STRATEGY` when any of the following is
 supported by current-head evidence:
 
 1. Three fresh `MECHANISM_DEFECT` findings have accumulated against the same
-   remediation mechanism in the campaign.
+   remediation mechanism across at least two patch-producing Review Sessions
+   (and therefore at least two patch-producing heads).
 2. Two consecutive patch-producing Review Sessions are dominated by fresh
    `MECHANISM_DEFECT` or `REMEDIATION_REGRESSION` findings for that mechanism.
 3. A material strategy premise is disproved. For example, a "small tokenizer"
@@ -144,6 +148,9 @@ Before escalating:
 - distinguish a single incomplete patch from repeated abstraction failure;
 - confirm that the findings challenge the same mechanism or strategy premise;
 - record the evidence that links each finding to the mechanism.
+- do not count three findings first observed in one patch-producing Review
+  Session toward threshold 1; treat them as one incomplete patch unless a
+  separate premise-invalidation or other condition above applies.
 
 One hundred duplicate comments remain one defect class and zero additional
 mechanism findings.

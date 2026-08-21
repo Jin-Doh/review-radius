@@ -94,10 +94,19 @@ material strategy premise such as a supposedly bounded parser or protocol
 implementation expanding into additional semantic dimensions.
 
 Independent defects and duplicate comments do not count toward mechanism churn.
-When the campaign is paused for strategy review, do not patch, trigger another
-automated reviewer such as `@codex review`, or use zero unresolved threads as a
-completion condition. Report the evidence, viable strategy choices, migration
-or rollback boundary, and the exact user decision required to continue.
+When the campaign is paused for strategy review, do not patch, trigger
+another automated reviewer such as `@codex review`, or use zero unresolved
+threads as a completion condition. Report the evidence, viable strategy
+choices, migration or rollback boundary, and the exact user decision required
+to continue.
+Ordinary feedback that needs user direction pauses only the active Review
+Session. It changes the campaign state only when it satisfies a named
+campaign-level strategy pause.
+The campaign state is `OPEN` while sessions may proceed, `CONVERGED` when the
+original PR goal and safe boundary are complete with no unresolved campaign
+pause reason, `PAUSED` only for a named campaign-level strategy pause,
+`BLOCKED` when an external prerequisite prevents that decision, and `STOPPED`
+when the campaign is intentionally ended without convergence.
 
 Read [Campaign convergence and strategy reset](references/review-campaign.md)
 for the evidence model, thresholds, false-positive controls, and resume rules.
@@ -432,11 +441,13 @@ Evaluate three independent outcomes:
   and every admitted same-class thread has a disposition, every credible
   in-scope candidate is classified, every `affected` candidate is fixed or
   explicitly blocked, later non-blocking feedback is queued or assigned to a
-  new session permitted by the Review Campaign, and no unresolved session or
-  campaign pause reason remains. Feedback requiring user direction keeps the
-  session and campaign `PAUSED`; classification alone cannot satisfy
-  convergence. Duplicates and reply-only threads are dispositioned without
-  consuming a round.
+  new session permitted by the Review Campaign, and no unresolved session pause
+  reason remains. Feedback requiring user direction keeps the session `PAUSED`;
+  it changes the campaign state only when it is a named campaign-level
+  strategy pause. The campaign is `CONVERGED` only when its original PR goal and
+  safe boundary are complete with no unresolved campaign pause reason.
+  Classification alone cannot satisfy convergence. Duplicates and reply-only
+  threads are dispositioned without consuming a round.
 - The QA verdict is acceptable only when mandatory verification obligations for
   the current head pass, or the user explicitly accepts every remaining
   material risk. An earlier-head result, lifecycle event, or green gate alone

@@ -120,6 +120,28 @@ admitted set and the new head without admitting feedback created after the
 original cutoff. Any new patch makes earlier evidence informative but
 insufficient for the new snapshot.
 
+## Review-campaign model
+
+A Review Campaign preserves the full review/fix lineage for one pull request
+across sessions. Opening a new session never resets prior patch-producing heads,
+finding origins, cumulative remediation churn, or an unresolved strategy pause.
+
+The campaign state is `OPEN` while sessions may proceed, `CONVERGED` when the
+original PR goal and safe boundary are complete with no unresolved campaign
+pause reason, `PAUSED` only for a named campaign-level strategy pause,
+`BLOCKED` when an external prerequisite prevents that decision, and `STOPPED`
+when the campaign is intentionally ended without convergence. An ordinary
+session pause does not mutate the campaign state.
+
+Classify fresh findings as `ORIGINAL_DEFECT`, `SAME_INVARIANT`,
+`REMEDIATION_REGRESSION`, `MECHANISM_DEFECT`, or `INDEPENDENT`. Pause with
+`NON_CONVERGING_REMEDIATION_STRATEGY` when three fresh mechanism findings span
+at least two patch-producing sessions, when two consecutive patch-producing
+sessions are dominated by mechanism findings or remediation regressions, or
+when a material strategy premise is disproved. Three findings first observed
+in one patch-producing session are one incomplete patch, not repeated
+abstraction failure, unless a separate premise-invalidation condition applies.
+
 ## Review-lens record
 
 Create one record for each actionable feedback cluster:
