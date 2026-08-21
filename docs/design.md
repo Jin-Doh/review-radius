@@ -98,9 +98,10 @@ review-convergence pause; it remains an independent overall-completion outcome.
 The bounded recheck uses the current head, initial thread cursor, an immutable
 server-comparable cutoff, and per-comment `createdAt` or equivalent high-water
 metadata. New arrivals do not reset the cutoff or fixed observation deadline.
-Initialization sets the fixed observation deadline at least five minutes in the
-future, or uses a longer repository-defined interval. The deadline is
-non-resetting and cannot be satisfied by an immediate same-time check.
+Initialization sets the fixed observation deadline at least one minute and
+thirty seconds in the future, or uses a longer repository-defined interval. The
+deadline is non-resetting and cannot be satisfied by an immediate same-time
+check.
 Refetch known thread IDs as well as cursor pages so replies on existing threads
 are classified against the same cutoff. Treat each newly observed comment or
 reply as its own arrival; a frozen parent thread does not make a late reply
