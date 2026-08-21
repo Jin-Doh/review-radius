@@ -710,7 +710,8 @@ class SkillContractTest(unittest.TestCase):
         for text in (design, skill):
             self.assertRegex(
                 text,
-                r"(?is)deadline.{0,100}at least five minutes in the future",
+                r"(?is)deadline.{0,120}at least one minute and thirty seconds "
+                r"in the future",
             )
             self.assertRegex(
                 text,

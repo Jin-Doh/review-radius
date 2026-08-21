@@ -79,8 +79,8 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
    - If no current PR exists, ask for the PR URL or number.
    - Confirm the active repository, worktree, branch, and PR head. Create the
      Session ID, record the initial head, and set a server-comparable feedback
-     cutoff plus a fixed recheck deadline at least five minutes in the future
-     before reading feedback. The deadline is non-resetting.
+     cutoff plus a fixed recheck deadline at least one minute and thirty seconds
+     in the future before reading feedback. The deadline is non-resetting.
    - Freeze the initial thread cursor and IDs for this session, but do not use
      cursor membership as admission. Include a comment or reply in the initial
      batch only when its own `createdAt` is at or before the cutoff; anything
