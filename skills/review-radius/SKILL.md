@@ -71,12 +71,47 @@ A user may explicitly resolve a named pause reason and extend the budget.
 Record the extension and transition `PAUSED -> OPEN` only while the current
 head, cutoff, and scope assumptions remain valid; otherwise start a new session.
 
+## Review Campaign
+
+A `Review Campaign` is the cumulative review/fix lineage for one pull request
+across every Review Session. Reconstruct it before opening a session whenever
+the PR already has review history. Starting a new session never resets campaign
+history, cumulative churn, or an unresolved strategy pause.
+
+Record at least the original PR goal and safe boundary, prior sessions and
+patch-producing heads, defect-class lineage, remediation strategy and premises,
+cumulative semantic-surface growth, and campaign pause reasons. Classify each
+fresh finding as `ORIGINAL_DEFECT`, `SAME_INVARIANT`,
+`REMEDIATION_REGRESSION`, `MECHANISM_DEFECT`, or `INDEPENDENT`.
+
+Apply the campaign convergence governor before another patch. Pause with
+`NON_CONVERGING_REMEDIATION_STRATEGY` when review evidence shows that the chosen
+remediation mechanism, rather than the original product defect, has become the
+source of repeated correctness failures. Default escalation evidence includes
+three fresh `MECHANISM_DEFECT` findings for the same mechanism, two consecutive
+patch-producing sessions dominated by such findings, or invalidation of a
+material strategy premise such as a supposedly bounded parser or protocol
+implementation expanding into additional semantic dimensions.
+
+Independent defects and duplicate comments do not count toward mechanism churn.
+When the campaign is paused for strategy review, do not patch, trigger another
+automated reviewer such as `@codex review`, or use zero unresolved threads as a
+completion condition. Report the evidence, viable strategy choices, migration
+or rollback boundary, and the exact user decision required to continue.
+
+Read [Campaign convergence and strategy reset](references/review-campaign.md)
+for the evidence model, thresholds, false-positive controls, and resume rules.
+
 ## Workflow
 
 1. Initialize and freeze the target.
    - Prefer the current branch PR via
      `gh pr view --json number,url,headRefName,baseRefName,headRefOid`.
    - If no current PR exists, ask for the PR URL or number.
+   - Reconstruct the Review Campaign from the PR goal, commits, review
+     submissions, thread history, and prior session or strategy records. Apply
+     the campaign convergence governor before creating a new Session ID. If it
+     pauses, stop before patching or triggering another automated review.
    - Confirm the active repository, worktree, branch, and PR head. Create the
      Session ID, record the initial head, and set a server-comparable feedback
      cutoff plus a fixed recheck deadline at least one minute and thirty seconds
@@ -104,6 +139,7 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      duplicate or reply.
    - Ignore resolved or outdated threads by default, but include them when they
      provide evidence that the same defect still exists at the current head.
+
 3. Classify incoming feedback without silently extending the session.
    - `current`: every actionable thread in the frozen batch, including initial
      non-blocking feedback, plus same-class blocking feedback created by the
@@ -116,12 +152,14 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      current or queued.
    - `pause`: a new defect class, material behavior or scope expansion, new
      public-contract or production-dependency decision, a same-class blocking
-     comment or reply created after the cutoff (even on a frozen thread), or a
-     required patch after the automatic budget is exhausted. Pause for user
-     direction; do not turn adjacency into automatic authorization.
+     comment or reply created after the cutoff (even on a frozen thread), a
+     campaign-level strategy pause, or a required patch after the automatic
+     budget is exhausted. Pause for user direction; do not turn adjacency or a
+     fresh Session ID into automatic authorization.
    - A paused session cannot be `CONVERGED` until every named review pause
-     reason is resolved or moved to a new session. The QA verdict does not
-     create or resolve a review-convergence pause; it remains independent.
+     reason is resolved or moved to a new session permitted by the Review
+     Campaign. The QA verdict does not create or resolve the
+     review-convergence pause. It remains independent.
    - A new head is not proof that the session converged. Mark prior evidence
      stale for pass purposes, bind the next analysis and QA obligations to the
      new snapshot, and keep the cutoff and fixed deadline unchanged.
@@ -141,7 +179,7 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
 5. Extract the review lens.
    - For each actionable feedback cluster, record the observed symptom,
      root-cause hypothesis, violated invariant, likely failure modes, search
-     anchors, bounded search surface, and risk.
+     anchors, bounded search surface, risk, and campaign finding origin.
    - Do not plan the final edit until the cause and credible search boundary are
      understood. Map every thread, including reply-only threads, to a cluster or
      an explicit disposition.
@@ -191,6 +229,8 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
      and explicit follow-ups for `out-of-scope` defects.
    - Pause before editing when the safe boundary is materially larger than the
      requested PR or conflicts with another requirement.
+   - Do not convert a campaign-level mechanism failure into another local
+     defect-class patch. Reopen the implementation strategy first.
 
 9. Apply the build-versus-buy gate and memoize the strategy when it is warranted.
    - Do not turn every review into a build-versus-buy exercise. Open the gate
@@ -206,8 +246,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
    - Require explicit user approval before adding a production dependency or
      materially expanding the authorized architecture. A new dependency is an
      option, not an authorization.
-   - Memoize the chosen strategy and every material comparison premise in the
-     session. Reuse it only while those premises remain valid. Reopen the
+   - Memoize the chosen strategy and every material comparison premise in both
+     the campaign and current session. Reuse it only while
+     those premises remain valid. Repeated `MECHANISM_DEFECT` evidence is
+     material premise invalidation and reopens the strategy decision. Reopen the
      decision when requirements, implementation size, maintenance, security,
      license, dependency, performance, integration, or replacement assumptions
      materially change; otherwise do not relitigate it during review churn.
@@ -228,9 +270,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       by itself.
 
 11. Execute bounded patch rounds.
-    - Re-read `headRefOid` before each patch cycle. If the remote PR head differs
-      from the session's current head, do not patch against stale analysis;
-      rebind or pause according to the authorized scope.
+    - Re-read `headRefOid` and confirm that the Review Campaign remains `OPEN`
+      before each patch cycle. If the remote PR head differs from the session's
+      current head, do not patch against stale analysis; rebind or pause
+      according to the authorized scope.
     - Before each patch, perform the pre-implementation review using the review
       lens and candidate ledger. Scope edits to verified feedback and
       same-class `affected` candidates, not merely to the exact lines named by
@@ -317,9 +360,10 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       only while patch budget remains. A same-class blocking comment or reply
       created after the cutoff cannot join this session, even on a frozen
       thread: record it as a named `PAUSED` reason and assign it to a new
-      session or explicit follow-up. Non-blocking comments and replies are
-      queued. A new defect class, material strategy decision, or required patch
-      after exhausted budget also pauses the review session; QA retains its
+      session or explicit follow-up only when the Review Campaign permits it.
+      Non-blocking comments and replies are queued. A new defect class, material
+      strategy decision, campaign-level strategy pause, or required patch after
+      exhausted budget also pauses the review session; QA retains its
       independent verdict.
     - If admitted feedback causes a patch and a new head, run closed-set
       reconciliation for that admitted set and the new head. Revalidate QA and
@@ -327,14 +371,15 @@ head, cutoff, and scope assumptions remain valid; otherwise start a new session.
       cutoff into this session.
     - Do not repeat feedback admission as an unbounded response loop. If another
       patch would be needed after two automatic rounds, stop at `PAUSED` and
-      request explicit user direction or a new session.
+      request explicit user direction. A new session is not a budget reset; the
+      Review Campaign must independently permit it.
 
 15. Report the evidence and independent outcomes.
-    - Summarize the Session ID, frozen head and cursor, current head, deadline,
-      thread dispositions, duplicate clusters, review lenses, search
-      boundaries, candidate classifications, same-class fixes, explicit
-      follow-ups, strategy memo, reactions, commits, tests, gates, and final
-      recheck results.
+    - Summarize the Campaign state and finding-origin counts, Session ID, frozen
+      head and cursor, current head, deadline, thread dispositions, duplicate
+      clusters, review lenses, search boundaries, candidate classifications,
+      same-class fixes, explicit follow-ups, strategy memo, reactions, commits,
+      tests, gates, and final recheck results.
     - Report review convergence, QA verdict, and delivery state as separate
       fields. State which navigation capabilities were used, whether their
       state was current for the inspected snapshot, and which semantic or
@@ -387,8 +432,9 @@ Evaluate three independent outcomes:
   and every admitted same-class thread has a disposition, every credible
   in-scope candidate is classified, every `affected` candidate is fixed or
   explicitly blocked, later non-blocking feedback is queued or assigned to a
-  new session, and no unresolved pause reason remains. Feedback requiring user
-  direction keeps the session `PAUSED`; classification alone cannot satisfy
+  new session permitted by the Review Campaign, and no unresolved session or
+  campaign pause reason remains. Feedback requiring user direction keeps the
+  session and campaign `PAUSED`; classification alone cannot satisfy
   convergence. Duplicates and reply-only threads are dispositioned without
   consuming a round.
 - The QA verdict is acceptable only when mandatory verification obligations for
@@ -399,10 +445,10 @@ Evaluate three independent outcomes:
 - Delivery is complete only when replies, reactions, resolution, commits, and
   pushes match the authorized implementation state.
 
-Overall completion requires review convergence, an acceptable QA verdict, and
-the authorized delivery state. The bounded final recheck is
-review-convergence evidence; it does not replace QA evaluation or restart the
-session indefinitely.
+Overall completion requires campaign and session review convergence, an
+acceptable QA verdict, and the authorized delivery state. The bounded final
+recheck is review-convergence evidence; it does not replace QA evaluation,
+restart the session indefinitely, or reset campaign churn.
 
 ## GitHub CLI notes
 
