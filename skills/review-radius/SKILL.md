@@ -186,7 +186,8 @@ for the current decision.
 | Use `rg`, AST, LSP, Graphify, or runtime evidence | [Code navigation and evidence routing](references/code-navigation.md) |
 | Need detailed intake, classification, build-versus-buy, GitHub-write, pushed-head, bounded-recheck, risk, Traceknot, completion, or report rules | [Detailed operational policy](operational-policy.md) |
 
-For the detailed operational policy, locate headings first. Read only the relevant section from that file, for example:
+For the detailed operational policy, locate headings first.
+Read only the relevant section from that file, for example:
 
 ```bash
 rg '^## |^[0-9]+\.' <skill>/operational-policy.md
