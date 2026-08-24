@@ -34,6 +34,11 @@ For every session that may patch code or request another automated review:
 - never reinterpret a denied, stale, malformed, blocked, or incomplete result as
   permission to continue.
 
+[Review governor](references/review-governor.md) is the single normative
+human/agent policy for patch authority, evidence precedence, fuse, impact,
+strategy, and convergence decisions. The controller executes that policy; the
+compact skill and detailed references do not redefine it.
+
 The executable controller owns session identity, repository and PR binding,
 base/current head, immutable cutoff, fixed deadline, initial thread set,
 deferred feedback, patch rounds, fuse budget, named pauses, scope fingerprint,
@@ -66,6 +71,24 @@ rewrite those fields from model memory.
   still required. Re-read the remote head immediately before every reaction,
   reply, resolution, review request, commit, or push; do not reuse one read for
   a later mutation.
+
+## Review Campaign
+
+A Review Campaign preserves cumulative PR review/fix lineage across bounded
+sessions. Starting a new session never resets campaign history, cumulative
+churn, an unresolved strategy pause, or the controller-owned patch rounds. A new
+session is not a fuse reset and a fresh Session ID is never automatic
+authorization.
+
+Ordinary feedback requiring direction pauses only the active Review Session. A
+paused session cannot be `CONVERGED` while a named review-convergence pause
+remains. The campaign may remain `OPEN` unless the evidence establishes a named
+campaign-level strategy pause. The QA verdict remains independent: the QA
+verdict does not create or resolve a review-convergence pause.
+
+Read [Review campaign](references/review-campaign.md) before opening a successor
+session, assigning follow-up work, classifying finding origin, or resuming a
+campaign strategy.
 
 ## Evidence before action
 
@@ -114,7 +137,8 @@ evidence, not frontier units.
 Classify every credible candidate as `affected`, `safe`, `uncertain`, or
 `out-of-scope`, with provenance and differentiating evidence. Report a confirmed
 operational out-of-scope defect immediately as evidence-only; it authorizes
-neither an edit nor an automatically assigned follow-up.
+neither an edit nor follow-up work. Any follow-up requires recorded explicit
+user direction and independent Review Campaign permission.
 
 ## Compact execution loop
 
@@ -161,8 +185,7 @@ for the current decision.
 | Use `rg`, AST, LSP, Graphify, or runtime evidence | [Code navigation and evidence routing](references/code-navigation.md) |
 | Need detailed intake, classification, build-versus-buy, GitHub-write, pushed-head, bounded-recheck, risk, Traceknot, completion, or report rules | [Detailed operational policy](operational-policy.md) |
 
-For the detailed operational policy, locate headings first and read only the
-relevant section, for example:
+For the detailed operational policy, locate headings first. Read only the relevant section from that file, for example:
 
 ```bash
 rg '^## |^[0-9]+\.' <skill>/operational-policy.md
