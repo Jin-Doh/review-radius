@@ -53,7 +53,7 @@ class ReviewGovernorDecisionTest(unittest.TestCase):
             {**valid, "boundary": "unknown", "premise": "invalid"},
             {
                 **valid,
-                "coverage": "high_risk_gap",
+                "coverage": "unknown",
                 "semantic_delta": "new_dimension",
             },
             {**valid, "architecture_verdict": "STRATEGY_REVIEW_REQUIRED"},
@@ -179,7 +179,7 @@ class ReviewGovernorDecisionTest(unittest.TestCase):
 
     def test_pairwise_coverage_and_empty_completion_gaps_precede_impact(self):
         valid = self.scenario("duplicate comments share one shrinking frontier")
-        for coverage in ("low_risk_gap", "high_risk_gap"):
+        for coverage in ("low_risk_gap", "high_risk_gap", "unknown"):
             packet = {**valid, "coverage": coverage, "frontier": "stable"}
             with self.subTest(coverage=coverage):
                 self.assertEqual(
@@ -391,7 +391,7 @@ class ReviewGovernorDecisionTest(unittest.TestCase):
                     governor.evaluate(packet)
 
     def test_cli_emits_deterministic_json(self):
-        signals = self.scenario("high-risk coverage gap blocks evidence")
+        signals = self.scenario("unknown coverage blocks evidence")
         with tempfile.NamedTemporaryFile(
             mode="w", encoding="utf-8", suffix=".json"
         ) as stream:

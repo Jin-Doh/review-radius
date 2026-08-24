@@ -41,7 +41,7 @@ _ENUMS: Final[dict[str, tuple[str, ...]]] = {
     "premise": ("valid", "invalid", "unknown"),
     "semantic_delta": ("none", "expected", "new_dimension"),
     "frontier": ("empty", "shrinking", "stable", "expanding", "regressing"),
-    "coverage": ("sufficient", "low_risk_gap", "high_risk_gap"),
+    "coverage": ("sufficient", "low_risk_gap", "high_risk_gap", "unknown"),
     "risk": ("same_or_lower", "higher"),
 }
 _REQUIRED: Final[tuple[str, ...]] = (

@@ -199,6 +199,28 @@
       }
     },
     {
+      "name": "unknown coverage blocks evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "unknown",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
       "name": "automatic fuse pauses without convergence evidence",
       "signals": {
         "architecture_verdict": "LOCAL_SAFE",

@@ -159,6 +159,20 @@ signal and may still be `false`. In particular, an incomplete but available
 obligation on a shrinking frontier preserves bounded local continuation. A
 blocked mandatory obligation never grants local, fuse, or impact authority.
 
+`coverage` is a required enum projected from the impact and architecture
+evidence planes:
+
+- `sufficient`: the required current-head surfaces have adequate evidence for
+  the assigned risk;
+- `low_risk_gap`: a known low-risk surface remains unverified;
+- `high_risk_gap`: a known high-risk surface remains unverified;
+- `unknown`: the surface or its risk cannot yet be classified reliably,
+  including unavailable, stale, unsupported, or unresolved dynamic coverage.
+
+Every value other than `sufficient` is insufficient architecture evidence.
+`unknown` preserves uncertainty; it never aliases safety or grants patch,
+impact, fuse, or convergence authority.
+
 An operational `out-of-scope` finding is not an acceptance example. When it is
 confirmed, record and report the evidence immediately, set
 `obligations_blocked: true`, and make that report evidence-only: it does not
