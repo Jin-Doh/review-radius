@@ -27,10 +27,10 @@ For every session that may patch code or request another automated review:
 - read [Review governor](references/review-governor.md) before projecting
   architecture, impact, verification, or patch signals;
 - reconstruct prior PR history with
-  [Campaign convergence and strategy reset](references/review-campaign.md) when
-  the PR already has review/fix history;
-- use a successful, current-head controller guard immediately before every
-  patch and automated review request;
+  [Review campaign](references/review-campaign.md) when the PR already has
+  review/fix history;
+- use a successful current-head controller guard immediately before every patch
+  and automated review request;
 - never reinterpret a denied, stale, malformed, blocked, or incomplete result as
   permission to continue.
 
@@ -39,11 +39,11 @@ human/agent policy for patch authority, evidence precedence, fuse, impact,
 strategy, and convergence decisions. The controller executes that policy; the
 compact skill and detailed references do not redefine it.
 
-The executable controller owns session identity, repository and PR binding,
-base/current head, immutable cutoff, fixed deadline, initial thread set,
-deferred feedback, patch rounds, fuse budget, named pauses, scope fingerprint,
-governor result, and single-use action authorization. Do not reconstruct or
-rewrite those fields from model memory.
+The controller owns session identity, repository and PR binding, base/current
+head, immutable cutoff, fixed deadline, initial thread set, deferred feedback,
+patch rounds, fuse budget, named pauses, scope fingerprint, governor result, and
+single-use action authorization. Do not reconstruct or rewrite those fields from
+model memory.
 
 ## Non-negotiable controls
 
@@ -76,19 +76,20 @@ rewrite those fields from model memory.
 
 A Review Campaign preserves cumulative PR review/fix lineage across bounded
 sessions. Starting a new session never resets campaign history, cumulative
-churn, an unresolved strategy pause, or the controller-owned patch rounds. A new
+churn, an unresolved strategy pause, or controller-owned patch rounds. A new
 session is not a fuse reset and a fresh Session ID is never automatic
 authorization.
 
-Ordinary feedback requiring direction pauses only the active Review Session. A
-paused session cannot be `CONVERGED` while a named review-convergence pause
-remains. The campaign may remain `OPEN` unless the evidence establishes a named
-campaign-level strategy pause. The QA verdict remains independent: the QA
-verdict does not create or resolve a review-convergence pause.
+A paused session cannot be `CONVERGED` until every named review-convergence pause
+is resolved or recorded explicit user direction selects an explicit follow-up
+or successor Review Session and the Review Campaign independently permits it.
+The campaign may remain `OPEN` when only the active session needs direction. The
+QA verdict remains independent: the QA verdict does not create or resolve a
+review-convergence pause.
 
-Read [Review campaign](references/review-campaign.md) before opening a successor
-session, assigning follow-up work, classifying finding origin, or resuming a
-campaign strategy.
+Read [Review campaign](references/review-campaign.md) for successor-session and
+explicit-follow-up dispositions, finding-origin classification, campaign
+lineage, and strategy-resume rules.
 
 ## Evidence before action
 
@@ -144,7 +145,7 @@ user direction and independent Review Campaign permission.
 
 - **Bind:** identify repository, PR, base/head, worktree, scope, user authority,
   prior campaign history, server-comparable cutoff, fixed deadline, and initial
-  thread IDs; initialize the controller state.
+  thread IDs; initialize controller state.
 - **Read:** fetch thread-aware review state, immutable arrival metadata,
   resolved/outdated state, review submissions, and current checks.
 - **Cluster:** map every item to a defect class or explicit no-code disposition;
