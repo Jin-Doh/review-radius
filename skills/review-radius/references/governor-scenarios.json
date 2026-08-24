@@ -1,0 +1,400 @@
+{
+  "scenarios": [
+    {
+      "name": "early premise invalidation",
+      "signals": {
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED",
+        "boundary": "within",
+        "premise": "invalid",
+        "semantic_delta": "none",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "STRATEGY_RESET_REQUIRED",
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED"
+      }
+    },
+    {
+      "name": "duplicate comments share one shrinking frontier",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "CONTINUE_LOCAL",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "bounded incomplete patch continues locally",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 1,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": false,
+        "obligations_blocked": false,
+        "qa_acceptable": false
+      },
+      "expected": {
+        "decision": "CONTINUE_LOCAL",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "new parser semantics reset strategy",
+      "signals": {
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "new_dimension",
+        "frontier": "stable",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": false,
+        "obligations_blocked": false,
+        "qa_acceptable": false
+      },
+      "expected": {
+        "decision": "STRATEGY_RESET_REQUIRED",
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED"
+      }
+    },
+    {
+      "name": "regressing frontier requires impact review",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "regressing",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "IMPACT_REVIEW_REQUIRED",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "outside-impact candidate needs impact review",
+      "signals": {
+        "architecture_verdict": "APPROVED_EXPANSION",
+        "boundary": "approved_expansion",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "stable",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "IMPACT_REVIEW_REQUIRED",
+        "architecture_verdict": "APPROVED_EXPANSION"
+      }
+    },
+    {
+      "name": "unapproved architecture expansion resets strategy",
+      "signals": {
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED",
+        "boundary": "expanded",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "STRATEGY_RESET_REQUIRED",
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED"
+      }
+    },
+    {
+      "name": "higher risk resets strategy",
+      "signals": {
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "higher",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "STRATEGY_RESET_REQUIRED",
+        "architecture_verdict": "STRATEGY_REVIEW_REQUIRED"
+      }
+    },
+    {
+      "name": "high-risk coverage gap blocks evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "high_risk_gap",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "unknown coverage blocks evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "unknown",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "automatic fuse pauses without convergence evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 2,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "AUTOMATION_FUSE_EXHAUSTED",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "green QA does not close architecture obligations",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "empty",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": false,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "empty frontier with unacceptable QA remains open",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "empty",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": false
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "acceptable convergence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "empty",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 2,
+        "automatic_patch_budget": 2,
+        "patch_required": false,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "CONVERGED",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "unknown boundary blocks architecture evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "unknown",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "empty",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": false,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "low-risk gap blocks evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "none",
+        "frontier": "shrinking",
+        "coverage": "low_risk_gap",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "no-code unresolved work needs evidence",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 2,
+        "automatic_patch_budget": 2,
+        "patch_required": false,
+        "obligations_complete": true,
+        "obligations_blocked": false,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    },
+    {
+      "name": "blocked mandatory obligation reports evidence only",
+      "signals": {
+        "architecture_verdict": "LOCAL_SAFE",
+        "boundary": "within",
+        "premise": "valid",
+        "semantic_delta": "expected",
+        "frontier": "shrinking",
+        "coverage": "sufficient",
+        "risk": "same_or_lower",
+        "patch_rounds": 0,
+        "automatic_patch_budget": 2,
+        "patch_required": true,
+        "obligations_complete": false,
+        "obligations_blocked": true,
+        "qa_acceptable": true
+      },
+      "expected": {
+        "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
+        "architecture_verdict": "LOCAL_SAFE"
+      }
+    }
+  ]
+}
