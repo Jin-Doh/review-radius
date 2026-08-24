@@ -52,6 +52,20 @@ refactoring.
 3. **Evidence before closure.** Classify candidates, test the invariant, and
    resolve threads only when the implementation state supports it.
 
+Review Radius keeps three planes separate: inspection maps the credible
+architecture and impact surface, edit authority stays inside the approved
+boundary, and the decision plane applies an evidence governor. Each session
+records an **architecture context packet** with base/head SHA, goal and
+non-goals, approved boundary, architecture baseline, strategy premises,
+**impact delta**, defect frontier, and verification obligations. The frontier
+is identified by invariant, mechanism, boundary, and obligation and trends
+`empty`, `shrinking`, `stable`, `expanding`, or `regressing`; duplicate
+comments are not separate findings. The evidence governor—not the architecture
+verdict—emits stop decisions such as `INSUFFICIENT_ARCHITECTURE_EVIDENCE` for
+missing evidence and `IMPACT_REVIEW_REQUIRED` for impact review. The
+independently assessed architecture verdict is a separate evaluator input and
+outcome; report it independently from the governor decision, QA, and delivery.
+
 ## Bounded review sessions
 
 Review Radius works in a bounded review session tied to the repository, PR,
@@ -63,9 +77,16 @@ may join while budget remains; later non-blocking feedback is queued; same-class
 blocking feedback created after the cutoff pauses the session for user
 direction, even on a frozen thread.
 
-The default automatic patch budget is **two rounds**. A two-pass review—before
-implementation and after implementation—is distinct from that budget. When a
-fix materially needs a new production dependency, nontrivial subsystem,
+The default automatic patch budget is **two rounds**, but those rounds are a
+**safety fuse**, not evidence of convergence or strategy failure. The evidence
+governor can stop earlier for an invalid premise, an unapproved boundary
+expansion, a new semantic dimension, higher risk, insufficient architecture
+evidence, or a required impact review. A two-pass review—before implementation
+and after implementation—is distinct from the fuse. When the fuse is exhausted,
+another patch requires explicit direction; no-code duplicate or reply-only
+dispositions remain allowed.
+
+When a fix materially needs a new production dependency, nontrivial subsystem,
 public-contract change, or similar strategy choice, Review Radius presents
 build-versus-buy options: direct implementation, an existing dependency, new
 open source, or a follow-up. It does not change production dependencies without

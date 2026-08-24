@@ -5,27 +5,32 @@ when feedback is described as recurring or non-converging, or when another
 patch would be justified mainly by code introduced during earlier review
 responses.
 
+The normative patch decision is defined by [Architecture-aware review governor](review-governor.md).
+This campaign reference preserves pull-request lineage, finding taxonomy,
+pause ownership, and strategy history; it MUST NOT invent a separate count
+threshold or override the governor's precedence-ordered decision table.
+
 ## Purpose
 
 A Review Session bounds one feedback batch. A Review Campaign preserves the
 history of the entire pull request across sessions so that opening a fresh
-session cannot reset accumulated evidence that the remediation strategy itself
-is failing.
+session cannot erase accumulated evidence, reset an unresolved strategy pause,
+or make an old mechanism appear new.
 
-The campaign governor answers a different question from ordinary review
-validation:
+The campaign record answers the historical question that supports the governor:
 
-> Are reviewers still finding the original defect class, or are they now
-> finding correctness holes in the mechanism introduced to repair it?
+> Does current evidence remain the original defect class, or does it challenge
+the remediation mechanism, its premises, or its architecture boundary?
 
-The second pattern is an architecture signal. It must not be converted into an
-unbounded sequence of locally reasonable patches.
+That classification is evidence for the Architecture Context Packet and defect
+frontier. It is not, by itself, authorization for another local patch.
 
 ## Campaign record
 
 Reconstruct the record from durable pull-request evidence whenever a prior
 session record is unavailable. Prefer immutable GitHub timestamps and commit
-SHAs over conversational summaries.
+SHAs over conversational summaries. Bind every observation to its session and
+inspected head.
 
 Record:
 
@@ -34,29 +39,50 @@ Record:
 | Field | Purpose |
 | --- | --- |
 | Repository and PR | Bind the campaign to one review lineage. |
-| Original base, head, title, body, and goal | Preserve the requested product change before review-driven expansion. |
-| Intended safe boundary | State the repository, behavior, contract, and dependency boundary originally authorized. |
-| Session lineage | Record Session IDs, cutoffs, heads, patch rounds, pauses, and outcomes. |
+| Original base, head, title, and goal | Preserve the requested product change before review-driven expansion. |
+| Original non-goals and intended safe boundary | State the repository, behavior, contract, dependency, persistence, migration, and production limits originally authorized. |
+| Session lineage | Preserve immutable prior Session IDs, each session's frozen head/snapshot and cutoff/cursor evidence, separate QA verdicts and delivery states, patch rounds, pauses, and outcomes across successor Review Sessions. |
 | Patch-producing reviews | Distinguish review observations that caused behavior changes from duplicate or reply-only traffic. |
-| Defect classes | Preserve the root-cause grouping across sessions. |
+| Defect classes and frontier identities | Preserve root-cause grouping and `(invariant_id, mechanism_id, boundary_id, obligation_id)` lineage across heads. |
 | Finding origins | Separate product defects from remediation-mechanism defects. |
-| Strategy memo and premises | Preserve why direct implementation, reuse, dependency, or follow-up was chosen. |
-| Semantic surface growth | Record newly implemented language, protocol, parser, dispatch, persistence, concurrency, or migration semantics. |
-| Campaign convergence | `OPEN`, `CONVERGED`, `PAUSED`, `BLOCKED`, or `STOPPED`. `CONVERGED` means the original PR goal and safe boundary are complete with no unresolved campaign pause reason; `STOPPED` means the campaign was intentionally ended without convergence. |
-| Pause reasons | Name the decision required before another patch or reviewer trigger. |
+| Strategy memo and premises | Preserve why direct implementation, reuse, dependency, owner-side proof, or follow-up was chosen and which premises remain valid. |
+| Architecture Context Packets | Link the snapshot-bound architecture baseline, impact delta, risk, obligations, independent `patch_required` boolean, independent `obligations_blocked` boolean, per-obligation `complete`/`incomplete`/`blocked` status, verdict, and coverage gaps used by the governor. |
+| Verification-obligation lineage | Preserve each head's required-obligation set and status. `obligations_blocked: true` means a required capability, prerequisite, or evidence artifact is unavailable or inaccessible; `false` means the obligation is available, even when its separate status is `incomplete`. |
+| Semantic surface growth | Describe newly implemented language, protocol, parser, dispatch, persistence, concurrency, migration, or other semantic dimensions. |
+| Campaign convergence | `OPEN`, `CONVERGED`, `PAUSED`, `BLOCKED`, or `STOPPED`. `CONVERGED` means the original PR goal and safe boundary are complete, the governor decision is `CONVERGED`, the architecture verdict is `LOCAL_SAFE` or explicitly authorized `APPROVED_EXPANSION`, the independent patch-plane fact is `patch_required: false`, the independent verification-plane fact is `obligations_blocked: false`, every required obligation is complete, and no unresolved campaign pause reason remains; delivery state is reported separately and does not gate campaign convergence; `STOPPED` means the campaign was intentionally ended without convergence. |
+
+| Campaign pause reasons | Name the strategy or external decision required before another patch or reviewer trigger. |
 
 <!-- markdownlint-enable MD013 -->
 
+A campaign's `obligations_blocked` status is a packet/governor evidence field,
+not a replacement for the campaign lifecycle state. A packet with
+`obligations_blocked: true` requires `INSUFFICIENT_ARCHITECTURE_EVIDENCE` and
+cannot authorize `CONTINUE_LOCAL` or `AUTOMATION_FUSE_EXHAUSTED`; a session may
+therefore be `PAUSED` while the campaign remains `OPEN`. An available but
+unfinished obligation remains `obligations_blocked: false` with an independent
+`incomplete` status and cannot be reported as complete or converged.
+
 A Session ID may change. The campaign identity does not change while the pull
-request and its original goal remain the same.
-Ordinary Review Session pauses do not mutate the campaign state. The campaign
-becomes `PAUSED` only for a named campaign-level strategy pause; a session may
-be `PAUSED` while the campaign remains `OPEN`.
+request and its original goal remain the same. Ordinary Review Session pauses
+do not mutate the campaign state. The campaign becomes `PAUSED` only for a
+named campaign-level strategy pause; a session may be `PAUSED` while the
+campaign remains `OPEN`.
+
+When a successor Review Session is created, the campaign lineage MUST append
+a new Session ID without rewriting the prior session record. It MUST preserve
+the prior immutable Session ID, frozen head/snapshot, cutoff and cursor
+evidence, QA verdict, and delivery state as historical fields. The successor
+Review Session MUST have its own current fields—current Session ID, current
+head/snapshot, current cutoff/cursor, current QA verdict, and current delivery
+state—recorded separately. New evidence or state transitions MUST NOT overwrite
+the prior session's values or be inherited as the successor's current evidence.
 
 ## Finding-origin taxonomy
 
 Classify every fresh actionable finding with exactly one primary origin. Add a
-secondary note when evidence is mixed.
+secondary note when evidence is mixed. A finding is a lineage record, not a
+numeric convergence unit.
 
 ### `ORIGINAL_DEFECT`
 
@@ -73,8 +99,8 @@ Review Radius expansion case.
 ### `REMEDIATION_REGRESSION`
 
 The finding describes behavior that worked before the review response and was
-broken by a prior patch in the campaign. Count the patch against campaign churn
-even when the regression is easy to fix.
+broken by a prior patch in the campaign. Preserve the causal patch and current
+head in the lineage even when the immediate correction is small.
 
 ### `MECHANISM_DEFECT`
 
@@ -91,10 +117,10 @@ the size of the immediate patch.
 
 The finding is a real but separate defect that neither shares the original
 invariant nor arises from the remediation mechanism. Do not use independent
-findings to claim that the mechanism is non-converging. Queue or follow them up
-under the normal scope rules.
+findings to claim that the mechanism is non-converging. Queue or follow them
+under normal scope rules.
 
-## Mechanism identity
+## Mechanism identity and lineage
 
 Group findings by the mechanism whose correctness they challenge, not only by
 file or function. Examples:
@@ -106,62 +132,107 @@ file or function. Examples:
 - `schema migration compatibility layer`
 
 A mechanism may span several helpers and defect classes. Renaming or splitting
-a helper does not reset its campaign history.
+a helper does not reset its campaign history. Preserve prior mechanism
+identity, strategy premises, architecture packets, frontier identities, and
+heads when comparing a revised implementation.
 
-## Convergence governor
+## Governor handoff
 
-Apply the governor before every patch-producing session and again after the
-post-implementation review.
+Apply [Architecture-aware review governor](review-governor.md) before every
+patch-producing session and again after the post-implementation rereview. The
+governor consumes the campaign's lineage and current Architecture Context
+Packet, including the required independent `obligations_blocked: true|false`
+input, then owns the decision whether a patch may proceed. The campaign MUST
+not substitute comment volume, finding counts, churn, session age, or a new
+Session ID for that decision.
 
-Pause with `NON_CONVERGING_REMEDIATION_STRATEGY` when any of the following is
-supported by current-head evidence:
+The governor's decisions are:
 
-1. Three fresh `MECHANISM_DEFECT` findings have accumulated against the same
-   remediation mechanism across at least two patch-producing Review Sessions
-   (and therefore at least two patch-producing heads).
-2. Two consecutive patch-producing Review Sessions are dominated by fresh
-   `MECHANISM_DEFECT` or `REMEDIATION_REGRESSION` findings for that mechanism.
-3. A material strategy premise is disproved. For example, a "small tokenizer"
-   now requires namespace, inheritance, dispatch, reachability, or equivalent
-   semantic modeling that was not part of the approved premise.
-4. The next patch requires another semantic dimension, public contract,
-   production dependency, migration, or nontrivial subsystem merely to keep the
-   remediation mechanism correct.
-5. A new Session ID is being used primarily to bypass an exhausted automatic
-   patch budget or an unresolved architecture pause.
+- `CONTINUE_LOCAL`: a bounded local patch is authorized within the current
+  approved boundary only when obligations are not blocked;
+- `IMPACT_REVIEW_REQUIRED`: automatic local patching pauses for impact review;
+- `STRATEGY_RESET_REQUIRED`: a premise, mechanism, boundary, semantic
+  dimension, ownership, or risk decision must be reopened;
+- `INSUFFICIENT_ARCHITECTURE_EVIDENCE`: current evidence cannot establish a
+  safe architecture or impact conclusion; `obligations_blocked: true` is a
+  direct insufficient-evidence signal evaluated before impact review, fuse
+  exhaustion, or local continuation;
+- `AUTOMATION_FUSE_EXHAUSTED`: another patch is needed after the default
+  automatic patch fuse and obligations are not blocked;
+- `CONVERGED`: the frontier is empty, obligations are complete with
+  `obligations_blocked: false`, current-head QA is acceptable, and the
+  architecture verdict is `LOCAL_SAFE` or explicitly authorized
+  `APPROVED_EXPANSION`; this governor decision is required before the campaign
+  can be `CONVERGED`.
 
-The numeric thresholds are defaults, not permission to ignore stronger earlier
-evidence. One high-severity mechanism flaw may be sufficient when it disproves
-the strategy premise or makes the gate unsafe for production.
+An available but unfinished obligation remains distinct from a blocked
+obligation: report `obligations_blocked: false` with its independent
+`incomplete` status. It prevents convergence but does not, by itself, prohibit
+a shrinking local patch or consume the fuse.
 
-## False-positive controls
+A stable, expanding, or regressing defect frontier is an impact-review signal.
+An invalid premise, unapproved architecture-boundary expansion, new semantic
+dimension, or higher risk is a strategy signal. Unknown or high-risk coverage
+gaps block evidence. Follow the governor's precedence order when more than one
+condition is present.
+
+The default automatic patch fuse is **two patch rounds**. It is a circuit
+breaker only: exhaustion is `AUTOMATION_FUSE_EXHAUSTED`, never evidence of
+convergence and never proof of `NON_CONVERGING_REMEDIATION_STRATEGY`. A fresh
+session does not silently reset the campaign or authorize a third automatic
+round. Duplicate, reply-only, explanation-only, and other no-code dispositions
+do not consume the fuse.
+
+This reference intentionally defines no standalone numeric mechanism or
+session threshold. Historical counts and churn remain useful context in the
+campaign record, for example to show that review attention is increasing or
+that a mechanism has repeatedly required examination, but they never make a
+strategy decision automatically. The current packet, frontier identity and
+trend, risk-adaptive obligations, architecture verdict, and explicit authority
+control.
+
+When `STRATEGY_RESET_REQUIRED` is supported by evidence that the remediation
+mechanism or its premises are the source of repeated correctness failures, set
+the named campaign pause reason to
+`NON_CONVERGING_REMEDIATION_STRATEGY`. Do not use that reason for an exhausted
+automation fuse alone. A single premise-invalidating or high-risk signal may
+be sufficient; repeated observations with the same root cause should be
+clustered and recorded as lineage rather than counted as separate defects.
+
+## False-positive controls and evidence quality
 
 Do not pause a campaign merely because the pull request is old, large, or has
-many comments.
+many comments. Before recording a strategy pause:
 
-Before escalating:
-
-- collapse duplicates and reply-only comments;
-- exclude findings already present before the remediation mechanism;
+- collapse duplicate and reply-only feedback into the relevant defect class;
+- preserve every thread ID and disposition without making each thread a new
+  frontier identity;
+- distinguish observations that predate the remediation from regressions
+  caused by it;
 - keep `INDEPENDENT` findings separate;
-- verify that each counted finding is fresh against the reviewed head;
-- distinguish a single incomplete patch from repeated abstraction failure;
-- confirm that the findings challenge the same mechanism or strategy premise;
-- record the evidence that links each finding to the mechanism.
-- do not count three findings first observed in one patch-producing Review
-  Session toward threshold 1; treat them as one incomplete patch unless a
-  separate premise-invalidation or other condition above applies.
+- bind each material finding and frontier identity to the reviewed head;
+- record the mechanism, invariant, boundary, and obligation it challenges;
+- distinguish a single incomplete patch from a changed strategy premise;
+- distinguish an unavailable or inaccessible required obligation
+  (`obligations_blocked: true`) from an available but unfinished obligation
+  (`obligations_blocked: false` with `incomplete`);
+- record static-tool limitations, dynamic behavior, unsupported languages, and
+  stale or inferred edges as coverage gaps;
+- treat unknown or high-risk gaps as blockers, not as evidence of safety;
+- do not infer convergence from zero unresolved threads, mergeability, green
+  CI, silence, a fresh session, or a new head.
 
-One hundred duplicate comments remain one defect class and zero additional
-mechanism findings.
+Historical count/churn can be included as a descriptive trend, but comments,
+files, lines, sessions, and rounds are not defect-frontier identities.
 
 ## Strategy reset
 
 A campaign pause invalidates automatic authorization for another local patch.
-Reopen the build-versus-buy decision and compare credible options:
+Reopen the strategy and update the Architecture Context Packet. Compare
+credible options such as:
 
 1. reduce the requirement or restore the original bounded fix;
-2. move the proof to the component that owns the runtime semantics;
+2. move proof or behavior to the component that owns the runtime semantics;
 3. use an established parser, protocol library, framework, or analyzer;
 4. split the mechanism into a separately reviewed follow-up;
 5. roll back the remediation and accept or explicitly document the original
@@ -169,8 +240,9 @@ Reopen the build-versus-buy decision and compare credible options:
 6. continue the direct implementation only with explicit approval of the new
    maintenance and semantic surface.
 
-Record which premise changed and why the previous strategy memo is no longer
-reusable.
+Record which premise changed, which authority approved the new boundary or
+risk, and why the previous strategy memo is no longer reusable. The governor
+must reassess the current head and obligations under the revised premise.
 
 ## Paused behavior
 
@@ -181,63 +253,115 @@ While `NON_CONVERGING_REMEDIATION_STRATEGY` remains unresolved:
 - do not open a fresh Review Session as a budget reset;
 - do not resolve threads only to make the pull request appear clean;
 - do not use zero unresolved threads, mergeability, or green CI as completion;
-- do not claim that a new head proves convergence.
+- do not claim that a new head proves convergence;
+- do classify duplicates, reply-only feedback, independent findings, and
+  evidence gaps so the campaign record remains complete;
+- do report architecture options and the exact decision required.
 
-No-code actions remain allowed when they preserve evidence: classify duplicate
-feedback, explain the pause, queue independent findings, and report architecture
-options.
+A session-level `IMPACT_REVIEW_REQUIRED`,
+`INSUFFICIENT_ARCHITECTURE_EVIDENCE`, or `AUTOMATION_FUSE_EXHAUSTED` pause may
+leave the campaign `OPEN`. A blocked obligation specifically requires
+`INSUFFICIENT_ARCHITECTURE_EVIDENCE` and cannot be represented as fuse
+exhaustion or local continuation; an available but incomplete obligation keeps
+`obligations_blocked: false` and its separate `INCOMPLETE` status. QA and
+Delivery remain independent outcomes.
 
 ## Resume rules
 
-Only explicit user direction may resolve the campaign pause. Record the chosen
-strategy, approved scope, dependency or contract authority, migration boundary,
-and the campaign evidence accepted as residual risk.
+Only explicit user direction or the applicable owner authority may resolve a
+campaign strategy pause. Record the chosen strategy, approved scope,
+dependency or contract authority, migration boundary, risk, architecture
+verdict, verification obligations, and any residual risk accepted.
 
-Resume with a new Review Session only when:
+Resume with a bounded Review Session only when:
 
-- the current PR head and original goal are still valid;
+- the current PR head and original goal remain valid, or the changed goal is
+  explicitly recorded;
 - the strategy decision resolves every named campaign pause reason;
-- the session inherits the full campaign record and cumulative churn;
-- the new automatic patch budget is explicitly authorized or starts under a
-  materially changed strategy rather than the same failed mechanism.
+- the session inherits the full campaign record and cumulative frontier and
+  mechanism lineage;
+- the current Architecture Context Packet is rebuilt or rebound to the head;
+- the new automatic budget is explicitly authorized, if an extension is
+  needed, and is evaluated by the governor rather than assumed from the new
+  Session ID.
 
 A strategy reset does not erase history. Later findings are evaluated against
-the revised premise and the prior mechanism evidence remains informative.
+the revised premises, while prior mechanism evidence remains informative.
+An automation-fuse extension does not imply that the strategy failed or that
+it succeeded; it only permits the governor to evaluate an explicitly
+re-authorized next round.
 
-## Required report
+## Required campaign report
 
-A campaign pause report must include:
+A campaign report must include the governor result and separate session, QA,
+and delivery outcomes. Every operational governor summary MUST include
+`patch_required` as an explicit independent boolean from the patch plane and
+`obligations_blocked` as an explicit independent boolean from the
+verification plane; no architecture verdict determines either one.
+`obligations_blocked: true` MUST be reported as
+`INSUFFICIENT_ARCHITECTURE_EVIDENCE` and MUST NOT be reported as
+`CONTINUE_LOCAL` or `AUTOMATION_FUSE_EXHAUSTED`. `obligations_blocked: false`
+does not mean obligations are complete: report each obligation's separate
+`complete`, `incomplete`, or `blocked` status. `patch_required: false` alone
+MUST NOT be treated as proof of review convergence, successful or acceptable
+QA, or delivery completion.
+Its `Campaign state: CONVERGED` entry MUST satisfy the campaign convergence
+gate above; a non-`CONVERGED` governor decision, an architecture verdict other
+than `LOCAL_SAFE` or explicitly authorized `APPROVED_EXPANSION`,
+`obligations_blocked: true`, an incomplete obligation, or `patch_required: true`
+cannot be reported as campaign convergence. Delivery state MUST remain
+separately reported and MUST NOT be treated as a campaign-state condition.
+Report the governor decision, architecture verdict, both independent booleans,
+and obligation statuses separately rather than inferring campaign convergence
+from any one field alone.
 
 ```text
-Campaign state: PAUSED
-Pause reason: NON_CONVERGING_REMEDIATION_STRATEGY
-Original PR goal: ...
-Current remediation mechanism: ...
-Finding-origin counts: ...
-Mechanism-level evidence: ...
-Invalidated strategy premise: ...
-Current-head and session lineage: ...
+Campaign state: OPEN | PAUSED | BLOCKED | CONVERGED | STOPPED
+Campaign pause reason: ...
+Governor decision: ...
+Architecture verdict: ...
+patch_required: true | false
+obligations_blocked: true | false
+Original PR goal/non-goals and approved boundary: ...
+Current remediation mechanism and strategy premises: ...
+Finding-origin lineage: ...
+Defect frontier identities and trend: ...
+Architecture Context Packet and current head: ...
+Impact delta and coverage gaps: ...
+Historical count/churn context (non-decisional): ...
+Verification obligations, obligation statuses, and QA verdict: ...
+Session lineage (prior immutable Session IDs, frozen heads/snapshots,
+cutoff/cursor evidence, separate QA verdicts and delivery states): ...
 Options: simplify | established dependency | owner-side proof | follow-up | rollback
 Recommended option: ...
 Decision required: ...
-Further patch authorized: no
-Automated reviewer trigger authorized: no
+Further patch authorized: yes | no | only within approved boundary
+Automated reviewer trigger authorized: yes | no
+Review convergence: ...
+Delivery state: ...
 ```
 
-Keep Review convergence, QA verdict, and Delivery state independent in the same
-report. A campaign pause is not a QA verdict, and a passing QA run does not
-resolve the campaign pause.
+For a campaign strategy pause, also identify the invalidated premise or
+immediate strategy signal, the evidence snapshot and session lineage, the
+migration/rollback boundary, and the exact user decision required. A campaign
+pause is not a QA verdict, and passing QA does not resolve it.
 
-## Acceptance examples
+## Examples
 
-1. Three reviews expose namespace, inheritance, and control-flow holes in a new
-   custom source analyzer. Classify all three as `MECHANISM_DEFECT`, invalidate
-   the bounded-parser premise, and pause before another patch.
-2. Two later comments repeat the same namespace reproducer. Cluster them as
-   duplicates; they do not increase the mechanism count.
+1. Namespace, inheritance, and control-flow observations expose distinct
+   correctness holes in a new custom source analyzer. Classify their origins
+   and frontier identities, record the invalidated bounded-parser premise, and
+   let the governor return `STRATEGY_RESET_REQUIRED` before another local
+   patch.
+2. Later comments repeat the same namespace reproducer. Cluster them as
+   duplicates; retain thread provenance, but do not create new frontier
+   identities or a new strategy signal.
 3. A separate typo appears during the pause. Classify it as `INDEPENDENT`; it
    does not justify or resolve the architecture pause.
-4. A new session is requested after two patch rounds without a strategy change.
-   Preserve campaign history and keep the campaign paused.
+4. A second automatic patch round leaves a non-empty frontier. The fuse may
+   return `AUTOMATION_FUSE_EXHAUSTED`; do not label the mechanism
+   `NON_CONVERGING_REMEDIATION_STRATEGY` without separate architecture
+   evidence.
 5. The user approves replacing the custom parser with an established parser.
-   Record the new premise and open a bounded session under the revised strategy.
+   Record the new premise, authority, boundary, obligations, and verdict, then
+   open a bounded session under the revised strategy.
