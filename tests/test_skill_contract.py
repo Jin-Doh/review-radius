@@ -37,12 +37,12 @@ class CompositePolicySurface:
         kwargs = {"encoding": encoding or "utf-8"}
         if errors is not None:
             kwargs["errors"] = errors
-        core = self.core.read_text(**kwargs).rstrip()
-        detail = self.detail.read_text(**kwargs).rstrip()
+        core = self.core.read_text(**kwargs)
+        detail = self.detail.read_text(**kwargs)
         # Keep the lossless pre-refactor policy first for legacy section-anchor
         # tests, then append the compact routing surface. Runtime loading remains
         # unchanged: agents receive CORE_SKILL first and load detail on demand.
-        return f"{detail}\n\n{core}"
+        return f"{detail}\n{core}"
 
     def read_bytes(self) -> bytes:
         return self.read_text().encode("utf-8")
