@@ -286,11 +286,13 @@ skipping an earlier applicable result:
   dimension is needed, the risk is higher than the approved strategy, or the
   independently supplied architecture verdict is `STRATEGY_REVIEW_REQUIRED`.
 - `INSUFFICIENT_ARCHITECTURE_EVIDENCE` applies when
-  `obligations_blocked` is `true`, the independently supplied architecture
-  verdict is `NOT_ASSESSED` or `BLOCKED`, the architecture baseline or
-  coverage has an unknown or high-risk gap, when an empty frontier has
-  incomplete verification obligations or unacceptable QA, or when no decision
-  row matches (including an unmatched or no-code evidence packet). A blocked
+  `obligations_blocked` is `true` or the independently supplied architecture
+  verdict is `NOT_ASSESSED` or `BLOCKED`. Every coverage value other than
+  `sufficient` blocks architecture evidence, including `low_risk_gap`,
+  `high_risk_gap`, and `unknown`. It also applies when the architecture baseline
+  is missing, when an empty frontier has incomplete verification obligations or
+  unacceptable QA, or when no decision row matches (including an unmatched or
+  no-code evidence packet). A blocked
   obligation is distinct from an incomplete but available obligation:
   `obligations_blocked: false` may continue shrinking patch work, but
   `obligations_blocked: true` is insufficient evidence before impact, fuse, or

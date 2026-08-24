@@ -172,9 +172,10 @@ a shrinking local patch or consume the fuse.
 
 A stable, expanding, or regressing defect frontier is an impact-review signal.
 An invalid premise, unapproved architecture-boundary expansion, new semantic
-dimension, or higher risk is a strategy signal. Unknown or high-risk coverage
-gaps block evidence. Follow the governor's precedence order when more than one
-condition is present.
+dimension, or higher risk is a strategy signal. Every coverage value other
+than `sufficient` blocks architecture evidence, including `low_risk_gap`,
+`high_risk_gap`, and `unknown`. Follow the governor's precedence order when
+more than one condition is present.
 
 The default automatic patch fuse is **two patch rounds**. It is a circuit
 breaker only: exhaustion is `AUTOMATION_FUSE_EXHAUSTED`, never evidence of
@@ -217,8 +218,10 @@ many comments. Before recording a strategy pause:
   (`obligations_blocked: true`) from an available but unfinished obligation
   (`obligations_blocked: false` with `incomplete`);
 - record static-tool limitations, dynamic behavior, unsupported languages, and
-  stale or inferred edges as coverage gaps;
-- treat unknown or high-risk gaps as blockers, not as evidence of safety;
+  stale or inferred edges as observations that require a coverage disposition;
+- after available fallbacks, project a non-sufficient coverage value only when
+  a required current-head surface remains inadequately evidenced;
+- every coverage value other than `sufficient` blocks architecture evidence;
 - do not infer convergence from zero unresolved threads, mergeability, green
   CI, silence, a fresh session, or a new head.
 

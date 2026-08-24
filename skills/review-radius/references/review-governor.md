@@ -23,10 +23,10 @@ that the mechanism is correct or that the architecture remains bounded.
 
 Every observation must be bound to a repository, session, base/head SHA, and
 freshness state. Preserve uncertainty instead of treating an unavailable,
-stale, inferred, or unsupported surface as safe. Unknown or high-risk coverage
-gaps block the evidence needed to converge. A graph edge, reviewer count, or
-comment count is context only; it is not a defect unit and never decides a
-strategy by itself.
+stale, inferred, or unsupported surface as safe. Every coverage value other
+than `sufficient` blocks architecture evidence, including `low_risk_gap`,
+`high_risk_gap`, and `unknown`. A graph edge, reviewer count, or comment count
+is context only; it is not a defect unit and never decides a strategy by itself.
 
 ## Three planes of evidence
 
@@ -289,9 +289,9 @@ no-code disposition.
 
 If no row can be established, use `INSUFFICIENT_ARCHITECTURE_EVIDENCE` rather
 than guessing. `CONVERGED` is impossible while `obligations_blocked` is true,
-`patch_required` is true, any unknown/high-risk coverage gap, unresolved
-frontier identity, incomplete obligation, unacceptable QA, or unacceptable
-architecture verdict remains.
+`patch_required` is true, an unresolved frontier identity, incomplete
+obligation, unacceptable QA, or an unacceptable architecture verdict remains.
+Every coverage value other than `sufficient` blocks architecture evidence.
 
 ## Automatic patch fuse
 

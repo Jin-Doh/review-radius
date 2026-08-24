@@ -213,9 +213,11 @@ Use the following decision identifiers exactly as the governor output:
   the boundary expansion is unapproved, a new semantic dimension appears, or
   risk is higher than authorized; stop patching and reopen strategy.
 - `INSUFFICIENT_ARCHITECTURE_EVIDENCE`: the baseline, per-head delta,
-  obligation coverage, or dynamic-surface evidence is missing, stale, unknown,
-  or high-risk; `obligations_blocked: true` is itself sufficient to block the
-  decision until evidence is complete.
+  obligation coverage, or dynamic-surface evidence is missing or stale. Every
+  coverage value other than `sufficient` blocks architecture evidence,
+  including `low_risk_gap`, `high_risk_gap`, and `unknown`;
+  `obligations_blocked: true` is itself sufficient to block the decision until
+  evidence is complete.
 - `AUTOMATION_FUSE_EXHAUSTED`: the exact two-round automatic circuit breaker
   has stopped a further required patch while obligations are not blocked; this
   is neither convergence nor strategy-failure evidence by itself.
@@ -229,7 +231,8 @@ false` with an independent `incomplete` status. It is not silently promoted to
 does not by itself prohibit a shrinking local patch or consume the fuse.
 
 Track frontier trends as `empty`, `shrinking`, `stable`, `expanding`, or
-`regressing`. Unknown or high-risk coverage gaps block evidence. A stable,
+`regressing`. Every coverage value other than `sufficient` blocks architecture
+evidence, including `low_risk_gap`, `high_risk_gap`, and `unknown`. A stable,
 expanding, or regressing frontier requires `IMPACT_REVIEW_REQUIRED` unless a
 stronger decision applies. The architecture verdict remains separate from the
 governor decision:
@@ -329,8 +332,9 @@ governor decision:
    - Before deriving a review lens for a risk-appropriate review (at minimum
      `R2`/`R3` or architecture-sensitive work), require a base-SHA architecture
      baseline and a per-head impact delta in the Architecture Context Packet.
-     Bind both to the current `headRefOid`; stale, unknown, or high-risk gaps
-     produce `INSUFFICIENT_ARCHITECTURE_EVIDENCE`.
+     Bind both to the current `headRefOid`. Every coverage value other than
+     `sufficient` blocks architecture evidence, including `low_risk_gap`,
+     `high_risk_gap`, and `unknown`.
    - Project `obligations_blocked` explicitly in the packet and governor input.
      Set it to `true` only when a required capability, prerequisite, or
      evidence artifact is unavailable or inaccessible. When the capability is
@@ -514,9 +518,9 @@ governor decision:
       and `AUTOMATION_FUSE_EXHAUSTED`; do not conflate it with an
       available-but-incomplete obligation.
     - For a risk-appropriate review, bind the architecture verdict and the
-      current head's impact delta to pre-push evidence. `NOT_ASSESSED`,
-      missing baseline/delta, or unresolved high-risk coverage gaps cannot
-      satisfy the architecture obligation.
+      current head's impact delta to pre-push evidence. `NOT_ASSESSED` and a
+      missing baseline or delta cannot satisfy the architecture obligation.
+      Every coverage value other than `sufficient` blocks architecture evidence.
     - After current-head QA and all verification obligations are complete,
       reevaluate the governor decision against that evidence. Do not record
       `CONVERGED` before this reevaluation; the post-rereview decision remains
@@ -697,9 +701,9 @@ Evaluate four independent outcomes:
   independent architecture post-review, `obligations_blocked: false`, its
   obligations and impact delta are complete, and the architecture verdict is
   `LOCAL_SAFE` or explicitly authorized `APPROVED_EXPANSION`. `NOT_ASSESSED`,
-  `STRATEGY_REVIEW_REQUIRED`, and `BLOCKED` verdicts, missing architecture
-  evidence, or unresolved high-risk architecture coverage gaps cannot
-  complete.
+  `STRATEGY_REVIEW_REQUIRED`, and `BLOCKED` verdicts or missing architecture
+  evidence cannot complete. Every coverage value other than `sufficient`
+  blocks architecture evidence.
 - The QA verdict is acceptable only when mandatory verification obligations for
   the current head pass, or the user explicitly accepts every remaining
   material risk. An earlier-head result, lifecycle event, or green gate alone

@@ -32,6 +32,7 @@ HERO = ROOT / "assets/readme/review-radius-hero.png"
 WORKFLOW_VISUAL = ROOT / "assets/readme/review-radius-workflow.png"
 OPENAI = ROOT / "skills/review-radius/agents/openai.yaml"
 GOVERNOR = ROOT / "skills/review-radius/references/review-governor.md"
+CAMPAIGN = ROOT / "skills/review-radius/references/review-campaign.md"
 LICENSE = ROOT / "LICENSE"
 THIRD_PARTY_NOTICES = ROOT / "THIRD_PARTY_NOTICES.md"
 sys.path.insert(0, str(ROOT / "experiments/tool-routing"))
@@ -473,6 +474,112 @@ class SkillContractTest(unittest.TestCase):
             self.assertIn("impact delta", text.lower())
             self.assertIn("defect frontier", text.lower())
             self.assertIn("verification obligations", text.lower())
+
+    def test_every_non_sufficient_coverage_value_blocks_architecture_evidence(self):
+        skill = SKILL.read_text()
+        design = DESIGN.read_text()
+        campaign = CAMPAIGN.read_text()
+        governor = GOVERNOR.read_text()
+
+        def numbered_step(text, number):
+            match = re.search(
+                rf"(?ms)^{number}\.\s+.*?(?=^\d+\.\s|\Z)",
+                text,
+            )
+            self.assertIsNotNone(match, f"missing workflow step {number}")
+            return match.group(0)
+
+        passages = {
+            "skill-decision-summary": (
+                self._markdown_section(
+                    skill, "Architecture-aware review governor"
+                ),
+                2,
+            ),
+            "skill-step-5": (numbered_step(skill, 5), 1),
+            "skill-step-12": (numbered_step(skill, 12), 1),
+            "skill-completion": (
+                self._markdown_section(skill, "Completion contract"),
+                1,
+            ),
+            "design-campaign": (
+                self._markdown_section(design, "Review-campaign model"),
+                1,
+            ),
+            "campaign-handoff": (
+                self._markdown_section(campaign, "Governor handoff"),
+                1,
+            ),
+            "campaign-evidence": (
+                self._markdown_section(
+                    campaign, "False-positive controls and evidence quality"
+                ),
+                1,
+            ),
+            "governor-observability": (
+                self._markdown_section(governor, "Partial observability"),
+                1,
+            ),
+            "governor-precedence": (
+                self._markdown_section(
+                    governor, "Precedence-ordered decision table"
+                ),
+                1,
+            ),
+        }
+        blocking_sentence = (
+            "every coverage value other than `sufficient` "
+            "blocks architecture evidence"
+        )
+        for name, (passage, expected_count) in passages.items():
+            normalized = re.sub(r"\s+", " ", passage.lower())
+            with self.subTest(passage=name):
+                self.assertEqual(
+                    normalized.count(blocking_sentence),
+                    expected_count,
+                )
+
+        campaign_evidence = re.sub(
+            r"\s+",
+            " ",
+            passages["campaign-evidence"][0].lower(),
+        )
+        self.assertIn(
+            "after available fallbacks, project a non-sufficient coverage "
+            "value only when a required current-head surface remains "
+            "inadequately evidenced",
+            campaign_evidence,
+        )
+
+        projection = self._markdown_section(
+            governor, "Executable signal projection"
+        )
+        for value in (
+            "sufficient",
+            "low_risk_gap",
+            "high_risk_gap",
+            "unknown",
+        ):
+            with self.subTest(coverage_value=value):
+                self.assertRegex(
+                    projection,
+                    rf"(?m)^- `{value}`:\s+",
+                )
+
+        for name, text in {
+            "skill": skill,
+            "design": design,
+            "campaign": campaign,
+            "governor": governor,
+        }.items():
+            normalized = re.sub(r"\s+", " ", text.lower())
+            with self.subTest(surface=name):
+                self.assertNotRegex(
+                    normalized,
+                    r"(?:stale,\s*)?unknown(?:,\s*or|\s+or)\s+high-risk"
+                    r".{0,120}(?:gap|coverage).{0,120}"
+                    r"(?:block|produce|cannot|insufficient)",
+                )
 
     def test_obligations_blocked_is_required_boolean_and_not_incomplete(self):
         surfaces = {
