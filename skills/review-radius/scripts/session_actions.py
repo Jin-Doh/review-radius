@@ -84,6 +84,7 @@ def campaign_lineage(
             "pause_reasons": [],
             "review_requested_heads": [],
             "state": "OPEN",
+            "pending_authorization": None,
         }
     campaign = read_json(path)
     if not isinstance(campaign, dict):
@@ -102,6 +103,10 @@ def campaign_lineage(
         raise StateError("campaign review_requested_heads must be a list")
     if campaign.get("state") not in {"OPEN", "PAUSED"}:
         raise StateError("campaign state must be OPEN or PAUSED")
+    if campaign.get("pending_authorization") is not None and not isinstance(
+        campaign.get("pending_authorization"), dict
+    ):
+        raise StateError("campaign pending_authorization must be an object or null")
     return campaign
 
 
@@ -116,6 +121,7 @@ def write_campaign(state: dict[str, Any]) -> None:
         "pause_reasons": session["pause_reasons"],
         "review_requested_heads": session["review_requested_heads"],
         "state": state["campaign"]["state"],
+        "pending_authorization": session["pending_authorization"],
     })
 
 
@@ -133,6 +139,8 @@ def campaign_matches(state: dict[str, Any], campaign: dict[str, Any]) -> bool:
         and campaign["pause_reasons"] == session["pause_reasons"]
         and campaign["review_requested_heads"] == session["review_requested_heads"]
         and campaign["state"] == state["campaign"]["state"]
+        and campaign["current_head"] == session["current_head"]
+        and campaign["pending_authorization"] == session["pending_authorization"]
     )
 
 
@@ -212,31 +220,38 @@ def cmd_project(args: argparse.Namespace) -> int:
     path = Path(args.state)
     state = load(path)
     head_matches(state, args.head)
-    projected = authoritative_signals(state, read_json(Path(args.signals)))
-    result = evaluate(projected)
-    state["signals"] = projected
-    state["governor"] = result
-    state["session"]["last_projected_at"] = now()
-    if result["decision"] in {
-        "STRATEGY_RESET_REQUIRED",
-        "AUTOMATION_FUSE_EXHAUSTED",
-    }:
-        code = result["decision"]
-        reasons = state["session"]["pause_reasons"]
-        if not any(reason.get("code") == code for reason in reasons):
-            reasons.append({
-                "id": code.lower().replace("_", "-"),
-                "code": code,
-                "detail": (
-                    "A strategy decision requires recorded explicit direction."
-                    if code == "STRATEGY_RESET_REQUIRED"
-                    else "Fuse exhaustion requires an explicit extension."
-                ),
-            })
-        state["session"]["state"] = "PAUSED"
-        state["campaign"]["state"] = "PAUSED"
-    mutate(path, state, "evidence_projected", head=args.head, decision=result["decision"])
-    persist_campaign(state)
+    session = state["session"]
+    with campaign_lock(session["repository"], session["pr"]):
+        campaign = campaign_lineage(
+            session["repository"], session["pr"], session["automatic_patch_budget"]
+        )
+        if not campaign_matches(state, campaign):
+            raise StateError("session campaign lineage is stale")
+        projected = authoritative_signals(state, read_json(Path(args.signals)))
+        result = evaluate(projected)
+        state["signals"] = projected
+        state["governor"] = result
+        state["session"]["last_projected_at"] = now()
+        if result["decision"] in {
+            "STRATEGY_RESET_REQUIRED",
+            "AUTOMATION_FUSE_EXHAUSTED",
+        }:
+            code = result["decision"]
+            reasons = state["session"]["pause_reasons"]
+            if not any(reason.get("code") == code for reason in reasons):
+                reasons.append({
+                    "id": code.lower().replace("_", "-"),
+                    "code": code,
+                    "detail": (
+                        "A strategy decision requires recorded explicit direction."
+                        if code == "STRATEGY_RESET_REQUIRED"
+                        else "Fuse exhaustion requires an explicit extension."
+                    ),
+                })
+            state["session"]["state"] = "PAUSED"
+            state["campaign"]["state"] = "PAUSED"
+        mutate(path, state, "evidence_projected", head=args.head, decision=result["decision"])
+        write_campaign(state)
     emit({"projected": True, **result})
     return 0
 
@@ -290,23 +305,32 @@ def cmd_guard(args: argparse.Namespace) -> int:
             reasons.append("convergence must be projected after recheck deadline")
     if reasons:
         return deny(args.action, reasons, state)
-    state["revision"] += 1
-    token = uuid.uuid4().hex
-    session["pending_authorization"] = {
-        "token": token,
-        "action": args.action,
-        "head": args.head,
-        "decision": result["decision"],
-        "revision": state["revision"],
-        "issued_at": now(),
-    }
-    state["history"].append({
-        "at": now(),
-        "event": "authorization_issued",
-        "action": args.action,
-        "head": args.head,
-    })
-    write_json(path, state)
+    with campaign_lock(session["repository"], session["pr"]):
+        campaign = campaign_lineage(
+            session["repository"], session["pr"], session["automatic_patch_budget"]
+        )
+        if not campaign_matches(state, campaign):
+            return deny(args.action, ["session campaign lineage is stale"], state)
+        if campaign["pending_authorization"] is not None:
+            return deny(args.action, ["another campaign action is pending"], state)
+        state["revision"] += 1
+        token = uuid.uuid4().hex
+        session["pending_authorization"] = {
+            "token": token,
+            "action": args.action,
+            "head": args.head,
+            "decision": result["decision"],
+            "revision": state["revision"],
+            "issued_at": now(),
+        }
+        state["history"].append({
+            "at": now(),
+            "event": "authorization_issued",
+            "action": args.action,
+            "head": args.head,
+        })
+        write_json(path, state)
+        write_campaign(state)
     emit({"action": args.action, "allowed": True, "authorization": token, **result})
     return 0
 

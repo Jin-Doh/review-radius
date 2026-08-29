@@ -308,17 +308,12 @@ class SessionControlTest(unittest.TestCase):
         first_code, first_guard = self.guard("patch", B)
         second_code, second_guard = self.guard_state(successor, "patch", B)
         self.assertEqual(first_code, 0)
-        self.assertEqual(second_code, 0)
+        self.assertEqual(second_code, 3)
         self.assertEqual(self.cli(
             "record-patch", "--state", str(self.state),
             "--authorization", first_guard["authorization"],
             "--from-head", B, "--to-head", C,
         )[0], 0)
-        self.assertEqual(self.cli(
-            "record-patch", "--state", str(successor),
-            "--authorization", second_guard["authorization"],
-            "--from-head", B, "--to-head", C,
-        )[0], 2)
 
     def test_stale_successor_cannot_authorize_after_campaign_pause(self):
         successor = self.dir / "paused-concurrent-successor.json"
