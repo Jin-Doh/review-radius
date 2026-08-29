@@ -19,6 +19,12 @@ class SessionControlTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.dir = Path(self.tmp.name)
         self.state = self.dir / "session.json"
+        self.campaign_path = (
+            ROOT / ".review-radius/campaigns/owner--repo-pr-79.json"
+        )
+        self.campaign_lock_path = self.campaign_path.with_suffix(".lock")
+        self.campaign_path.unlink(missing_ok=True)
+        self.campaign_lock_path.unlink(missing_ok=True)
         cutoff = datetime.now(timezone.utc)
         self.cutoff = cutoff.isoformat().replace("+00:00", "Z")
         self.deadline = (cutoff + timedelta(seconds=90)).isoformat().replace("+00:00", "Z")
@@ -33,13 +39,15 @@ class SessionControlTest(unittest.TestCase):
         )
 
     def tearDown(self):
+        self.campaign_path.unlink(missing_ok=True)
+        self.campaign_lock_path.unlink(missing_ok=True)
         self.tmp.cleanup()
 
-    def cli(self, *args, check=None):
+    def cli(self, *args, check=None, cwd=ROOT):
         result = subprocess.run(
             [sys.executable, str(SCRIPT), *args], text=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-            cwd=self.dir,
+            cwd=cwd,
         )
         if check is not None:
             self.assertEqual(result.returncode, check, result.stdout + result.stderr)
@@ -47,6 +55,9 @@ class SessionControlTest(unittest.TestCase):
         return result.returncode, payload
 
     def project(self, head, **overrides):
+        return self.project_state(self.state, head, **overrides)
+
+    def project_state(self, state, head, **overrides):
         signals = {
             "architecture_verdict": "LOCAL_SAFE", "boundary": "within",
             "premise": "valid", "semantic_delta": "expected",
@@ -56,12 +67,19 @@ class SessionControlTest(unittest.TestCase):
             "qa_acceptable": False,
         }
         signals.update(overrides)
-        path = self.dir / "signals.json"
+        path = self.dir / f"{state.stem}-signals.json"
         path.write_text(json.dumps(signals))
-        return self.cli("project", "--state", str(self.state), "--signals", str(path), "--head", head)
+        return self.cli(
+            "project", "--state", str(state), "--signals", str(path), "--head", head,
+        )
 
     def guard(self, action, head):
         return self.cli("guard", "--state", str(self.state), "--action", action, "--head", head)
+
+    def guard_state(self, state, action, head):
+        return self.cli(
+            "guard", "--state", str(state), "--action", action, "--head", head,
+        )
 
     def patch(self, from_head, to_head):
         code, guarded = self.guard("patch", from_head)
@@ -224,6 +242,80 @@ class SessionControlTest(unittest.TestCase):
         )[0], 0)
         state = json.loads(successor.read_text())
         self.assertEqual(state["session"]["automatic_patch_budget"], 3)
+
+    def test_successor_inherits_unresolved_pause(self):
+        self.assertEqual(self.project(B, premise="invalid")[0], 0)
+        successor = self.dir / "paused-successor.json"
+        self.assertEqual(self.cli(
+            "init", "--state", str(successor), "--repository", "owner/repo",
+            "--pr", "79", "--base-sha", A, "--head-sha", B,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1",
+        )[0], 0)
+        state = json.loads(successor.read_text())
+        self.assertEqual(state["session"]["state"], "PAUSED")
+        self.assertEqual(
+            state["session"]["pause_reasons"][0]["code"],
+            "STRATEGY_RESET_REQUIRED",
+        )
+
+    def test_successor_preserves_review_request_history(self):
+        self.assertEqual(self.project(
+            B, frontier="empty", patch_required=False,
+            obligations_complete=True, qa_acceptable=True,
+        )[0], 0)
+        code, guarded = self.guard("request-review", B)
+        self.assertEqual(code, 0)
+        self.assertEqual(self.cli(
+            "record-review-request", "--state", str(self.state),
+            "--authorization", guarded["authorization"], "--head", B,
+        )[0], 0)
+        successor = self.dir / "reviewed-successor.json"
+        self.assertEqual(self.cli(
+            "init", "--state", str(successor), "--repository", "owner/repo",
+            "--pr", "79", "--base-sha", A, "--head-sha", B,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1",
+        )[0], 0)
+        self.assertIn(B, json.loads(successor.read_text())["session"]["review_requested_heads"])
+
+    def test_stale_successor_cannot_record_another_patch(self):
+        successor = self.dir / "concurrent-successor.json"
+        self.assertEqual(self.cli(
+            "init", "--state", str(successor), "--repository", "owner/repo",
+            "--pr", "79", "--base-sha", A, "--head-sha", B,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1",
+        )[0], 0)
+        self.assertEqual(self.project(B)[0], 0)
+        self.assertEqual(self.project_state(successor, B)[0], 0)
+        first_code, first_guard = self.guard("patch", B)
+        second_code, second_guard = self.guard_state(successor, "patch", B)
+        self.assertEqual(first_code, 0)
+        self.assertEqual(second_code, 0)
+        self.assertEqual(self.cli(
+            "record-patch", "--state", str(self.state),
+            "--authorization", first_guard["authorization"],
+            "--from-head", B, "--to-head", C,
+        )[0], 0)
+        self.assertEqual(self.cli(
+            "record-patch", "--state", str(successor),
+            "--authorization", second_guard["authorization"],
+            "--from-head", B, "--to-head", C,
+        )[0], 2)
+
+    def test_campaign_ledger_uses_repository_root_from_subdirectory(self):
+        self.assertEqual(self.project(B)[0], 0)
+        self.assertEqual(self.patch(B, C)[0], 0)
+        successor = self.dir / "nested-successor.json"
+        with tempfile.TemporaryDirectory(dir=ROOT) as nested:
+            self.assertEqual(self.cli(
+                "init", "--state", str(successor), "--repository", "owner/repo",
+                "--pr", "79", "--base-sha", A, "--head-sha", C,
+                "--cutoff", self.cutoff, "--deadline", self.deadline,
+                "--scope-fingerprint", "scope-v1", cwd=nested,
+            )[0], 0)
+        self.assertEqual(json.loads(successor.read_text())["session"]["patch_rounds"], 1)
 
     def test_strategy_reset_creates_named_pause(self):
         code, payload = self.project(B, premise="invalid")
