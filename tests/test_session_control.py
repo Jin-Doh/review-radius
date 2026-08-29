@@ -39,6 +39,7 @@ class SessionControlTest(unittest.TestCase):
         result = subprocess.run(
             [sys.executable, str(SCRIPT), *args], text=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            cwd=self.dir,
         )
         if check is not None:
             self.assertEqual(result.returncode, check, result.stdout + result.stderr)
@@ -154,6 +155,75 @@ class SessionControlTest(unittest.TestCase):
         )
         self.assertEqual(code, 2)
         self.assertIn("future", payload["error"])
+
+    def test_initial_cutoff_cannot_expand_the_frozen_batch(self):
+        state = self.dir / "future-cutoff.json"
+        cutoff = datetime.now(timezone.utc) + timedelta(seconds=6)
+        deadline = cutoff + timedelta(seconds=90)
+        code, payload = self.cli(
+            "init", "--state", str(state), "--repository", "owner/repo",
+            "--pr", "80", "--base-sha", A, "--head-sha", B,
+            "--cutoff", cutoff.isoformat().replace("+00:00", "Z"),
+            "--deadline", deadline.isoformat().replace("+00:00", "Z"),
+            "--scope-fingerprint", "scope-v1",
+        )
+        self.assertEqual(code, 2)
+        self.assertIn("cutoff", payload["error"])
+
+    def test_successor_inherits_campaign_patch_rounds(self):
+        self.assertEqual(self.project(B)[0], 0)
+        self.assertEqual(self.patch(B, C)[0], 0)
+        self.assertEqual(self.project(C)[0], 0)
+        self.assertEqual(self.patch(C, D)[0], 0)
+        successor = self.dir / "successor.json"
+        self.assertEqual(self.cli(
+            "init", "--state", str(successor), "--repository", "owner/repo",
+            "--pr", "79", "--base-sha", A, "--head-sha", D,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1",
+        )[0], 0)
+        state = json.loads(successor.read_text())
+        self.assertEqual(state["session"]["patch_rounds"], 2)
+        self.assertEqual(state["session"]["automatic_patch_budget"], 2)
+        signals = {
+            "architecture_verdict": "LOCAL_SAFE", "boundary": "within",
+            "premise": "valid", "semantic_delta": "expected",
+            "frontier": "shrinking", "coverage": "sufficient",
+            "risk": "same_or_lower", "patch_required": True,
+            "obligations_complete": False, "obligations_blocked": False,
+            "qa_acceptable": False,
+        }
+        signal_path = self.dir / "successor-signals.json"
+        signal_path.write_text(json.dumps(signals))
+        code, projected = self.cli(
+            "project", "--state", str(successor), "--signals", str(signal_path),
+            "--head", D,
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(projected["decision"], "AUTOMATION_FUSE_EXHAUSTED")
+        self.assertEqual(self.cli(
+            "guard", "--state", str(successor), "--action", "patch", "--head", D,
+        )[0], 3)
+
+    def test_successor_inherits_explicit_fuse_extension(self):
+        self.assertEqual(self.project(B)[0], 0)
+        self.assertEqual(self.patch(B, C)[0], 0)
+        self.assertEqual(self.project(C)[0], 0)
+        self.assertEqual(self.patch(C, D)[0], 0)
+        self.assertEqual(self.project(D)[1]["decision"], "AUTOMATION_FUSE_EXHAUSTED")
+        self.assertEqual(self.cli(
+            "extend-fuse", "--state", str(self.state), "--head", D,
+            "--additional-rounds", "1", "--direction", "Allow one bounded round",
+        )[0], 0)
+        successor = self.dir / "extended-successor.json"
+        self.assertEqual(self.cli(
+            "init", "--state", str(successor), "--repository", "owner/repo",
+            "--pr", "79", "--base-sha", A, "--head-sha", D,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1",
+        )[0], 0)
+        state = json.loads(successor.read_text())
+        self.assertEqual(state["session"]["automatic_patch_budget"], 3)
 
     def test_strategy_reset_creates_named_pause(self):
         code, payload = self.project(B, premise="invalid")

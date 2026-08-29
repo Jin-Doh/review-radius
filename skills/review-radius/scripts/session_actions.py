@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import uuid
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,48 @@ from session_state import (
 )
 
 
+MAX_CUTOFF_CLOCK_SKEW = timedelta(seconds=5)
+
+
+def campaign_ledger_path(repository: str, pr: int) -> Path:
+    return Path(".review-radius") / "campaigns" / (
+        f"{repository.replace('/', '--')}-pr-{pr}.json"
+    )
+
+
+def campaign_lineage(
+    repository: str,
+    pr: int,
+    initial_budget: int,
+) -> tuple[Path, int, int]:
+    path = campaign_ledger_path(repository, pr)
+    if not path.exists():
+        return path, 0, initial_budget
+    campaign = read_json(path)
+    if not isinstance(campaign, dict):
+        raise StateError("campaign lineage must be an object")
+    if campaign.get("repository") != repository or campaign.get("pr") != pr:
+        raise StateError("campaign lineage does not match repository and PR")
+    rounds = campaign.get("patch_rounds")
+    budget = campaign.get("automatic_patch_budget")
+    if not isinstance(rounds, int) or rounds < 0:
+        raise StateError("campaign patch_rounds must be nonnegative")
+    if not isinstance(budget, int) or budget <= 0:
+        raise StateError("campaign automatic_patch_budget must be positive")
+    return path, rounds, budget
+
+
+def persist_campaign(state: dict[str, Any]) -> None:
+    session = state["session"]
+    write_json(campaign_ledger_path(session["repository"], session["pr"]), {
+        "repository": session["repository"],
+        "pr": session["pr"],
+        "current_head": session["current_head"],
+        "patch_rounds": session["patch_rounds"],
+        "automatic_patch_budget": session["automatic_patch_budget"],
+    })
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     path = Path(args.state)
     if path.exists():
@@ -43,12 +86,20 @@ def cmd_init(args: argparse.Namespace) -> int:
     deadline = parse_time(args.deadline, "deadline")
     if deadline - cutoff < MIN_RECHECK_DELAY:
         raise StateError("deadline must be at least 90 seconds after cutoff")
-    if deadline <= parse_time(now(), "current time"):
+    initialized_at = parse_time(now(), "current time")
+    if cutoff > initialized_at + MAX_CUTOFF_CLOCK_SKEW:
+        raise StateError("cutoff must not be later than initialization")
+    if deadline <= initialized_at:
         raise StateError("deadline must be in the future")
     if args.patch_budget <= 0:
         raise StateError("patch budget must be positive")
     if args.patch_budget > DEFAULT_PATCH_BUDGET:
         raise StateError("initial automatic patch budget cannot exceed two rounds")
+    _, patch_rounds, patch_budget = campaign_lineage(
+        args.repository,
+        args.pr,
+        args.patch_budget,
+    )
     state: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "revision": 0,
@@ -63,8 +114,8 @@ def cmd_init(args: argparse.Namespace) -> int:
             "recheck_deadline": args.deadline,
             "scope_fingerprint": args.scope_fingerprint,
             "initial_thread_ids": sorted(set(args.thread_id)),
-            "patch_rounds": 0,
-            "automatic_patch_budget": args.patch_budget,
+            "patch_rounds": patch_rounds,
+            "automatic_patch_budget": patch_budget,
             "state": "OPEN",
             "pause_reasons": [],
             "deferred_feedback": [],
@@ -72,7 +123,7 @@ def cmd_init(args: argparse.Namespace) -> int:
             "pending_authorization": None,
         },
         "campaign": {"state": "OPEN"},
-        "signals": default_signals(0, args.patch_budget),
+        "signals": default_signals(patch_rounds, patch_budget),
         "governor": {
             "decision": "INSUFFICIENT_ARCHITECTURE_EVIDENCE",
             "architecture_verdict": "NOT_ASSESSED",
@@ -81,6 +132,7 @@ def cmd_init(args: argparse.Namespace) -> int:
     }
     validate_state(state)
     write_json(path, state)
+    persist_campaign(state)
     emit({"created": True, "session_id": state["session"]["id"], "state": str(path)})
     return 0
 
@@ -196,6 +248,7 @@ def cmd_record_patch(args: argparse.Namespace) -> int:
         to_head=to_head,
         patch_rounds=session["patch_rounds"],
     )
+    persist_campaign(state)
     emit({"recorded": True, "current_head": to_head, "patch_rounds": session["patch_rounds"]})
     return 0
 
@@ -327,6 +380,7 @@ def cmd_extend(args: argparse.Namespace) -> int:
         additional_rounds=args.additional_rounds,
         direction=args.direction,
     )
+    persist_campaign(state)
     emit({
         "extended": True,
         "automatic_patch_budget": session["automatic_patch_budget"],
