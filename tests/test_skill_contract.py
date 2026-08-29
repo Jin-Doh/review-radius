@@ -122,6 +122,9 @@ class SkillContractTest(_suite.SkillContractTest):
             "automated review request",
             "post-cutoff feedback",
             "current session",
+            "later non-blocking feedback",
+            "post-cutoff blocking feedback",
+            "pause",
         ):
             with self.subTest(term=term):
                 self.assertIn(term, prompt)

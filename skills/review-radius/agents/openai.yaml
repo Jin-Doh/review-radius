@@ -1,4 +1,4 @@
 interface:
   display_name: "Review Radius · 리뷰 대응"
   short_description: "PR 리뷰 루프를 제한하고 QA와 스레드 완료를 분리합니다."
-  default_prompt: "Use $review-radius to run this PR review through persisted session state and a head-bound guard before any patch or automated review request, while deferring post-cutoff feedback outside the current session."
+  default_prompt: "Use $review-radius to run this PR review through persisted session state and a head-bound guard before any patch or automated review request; classify post-cutoff feedback: defer later non-blocking feedback outside the current session and pause on post-cutoff blocking feedback."
