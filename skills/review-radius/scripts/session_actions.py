@@ -43,8 +43,12 @@ def cmd_init(args: argparse.Namespace) -> int:
     deadline = parse_time(args.deadline, "deadline")
     if deadline - cutoff < MIN_RECHECK_DELAY:
         raise StateError("deadline must be at least 90 seconds after cutoff")
+    if deadline <= parse_time(now(), "current time"):
+        raise StateError("deadline must be in the future")
     if args.patch_budget <= 0:
         raise StateError("patch budget must be positive")
+    if args.patch_budget > DEFAULT_PATCH_BUDGET:
+        raise StateError("initial automatic patch budget cannot exceed two rounds")
     state: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "revision": 0,
@@ -89,6 +93,15 @@ def cmd_project(args: argparse.Namespace) -> int:
     result = evaluate(projected)
     state["signals"] = projected
     state["governor"] = result
+    if result["decision"] == "STRATEGY_RESET_REQUIRED":
+        reasons = state["session"]["pause_reasons"]
+        if not any(reason.get("code") == "STRATEGY_RESET_REQUIRED" for reason in reasons):
+            reasons.append({
+                "id": "strategy-reset",
+                "code": "STRATEGY_RESET_REQUIRED",
+                "detail": "A strategy decision requires recorded explicit direction.",
+            })
+        state["session"]["state"] = "PAUSED"
     mutate(path, state, "evidence_projected", head=args.head, decision=result["decision"])
     emit({"projected": True, **result})
     return 0
@@ -207,21 +220,40 @@ def cmd_defer(args: argparse.Namespace) -> int:
     if created <= cutoff:
         raise StateError("deferred feedback must be created strictly after cutoff")
     deferred = state["session"]["deferred_feedback"]
-    if any(item.get("thread_id") == args.thread_id for item in deferred):
-        raise StateError("thread is already deferred")
-    deferred.append({
-        "thread_id": args.thread_id,
-        "created_at": args.created_at,
-        "classification": args.classification,
-        "reason": args.reason,
-        "admitted_to_current_session": False,
-    })
-    if args.classification == "post-cutoff-blocking":
-        state["session"]["pause_reasons"].append({
-            "id": f"post-cutoff-{args.thread_id}",
-            "code": "POST_CUTOFF_BLOCKING_FEEDBACK",
-            "detail": args.reason,
+    existing = next(
+        (item for item in deferred if item.get("thread_id") == args.thread_id),
+        None,
+    )
+    if existing is not None:
+        if (
+            args.classification != "post-cutoff-blocking"
+            or existing.get("classification") == "post-cutoff-blocking"
+        ):
+            raise StateError("thread is already deferred")
+        existing.update({
+            "created_at": args.created_at,
+            "classification": args.classification,
+            "reason": args.reason,
         })
+    else:
+        deferred.append({
+            "thread_id": args.thread_id,
+            "created_at": args.created_at,
+            "classification": args.classification,
+            "reason": args.reason,
+            "admitted_to_current_session": False,
+        })
+    if args.classification == "post-cutoff-blocking":
+        pause_id = f"post-cutoff-{args.thread_id}"
+        if not any(
+            reason.get("id") == pause_id
+            for reason in state["session"]["pause_reasons"]
+        ):
+            state["session"]["pause_reasons"].append({
+                "id": pause_id,
+                "code": "POST_CUTOFF_BLOCKING_FEEDBACK",
+                "detail": args.reason,
+            })
         state["session"]["state"] = "PAUSED"
     mutate(
         path,

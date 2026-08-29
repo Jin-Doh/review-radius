@@ -19,9 +19,12 @@ class SessionControlTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.dir = Path(self.tmp.name)
         self.state = self.dir / "session.json"
-        cutoff = datetime(2026, 8, 25, 0, 0, tzinfo=timezone.utc)
+        cutoff = datetime.now(timezone.utc)
         self.cutoff = cutoff.isoformat().replace("+00:00", "Z")
         self.deadline = (cutoff + timedelta(seconds=90)).isoformat().replace("+00:00", "Z")
+        self.late_feedback_time = (
+            cutoff + timedelta(seconds=1)
+        ).isoformat().replace("+00:00", "Z")
         self.cli(
             "init", "--state", str(self.state), "--repository", "owner/repo",
             "--pr", "79", "--base-sha", A, "--head-sha", B,
@@ -127,11 +130,48 @@ class SessionControlTest(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(extended["decision"], "CONTINUE_LOCAL")
 
+    def test_initial_patch_budget_cannot_exceed_two_round_fuse(self):
+        state = self.dir / "over-budget.json"
+        code, payload = self.cli(
+            "init", "--state", str(state), "--repository", "owner/repo",
+            "--pr", "80", "--base-sha", A, "--head-sha", B,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1", "--patch-budget", "3",
+        )
+        self.assertEqual(code, 2)
+        self.assertIn("two rounds", payload["error"])
+
+    def test_expired_initial_deadline_is_rejected(self):
+        state = self.dir / "expired.json"
+        cutoff = (datetime.now(timezone.utc) - timedelta(minutes=5))
+        deadline = cutoff + timedelta(seconds=90)
+        code, payload = self.cli(
+            "init", "--state", str(state), "--repository", "owner/repo",
+            "--pr", "80", "--base-sha", A, "--head-sha", B,
+            "--cutoff", cutoff.isoformat().replace("+00:00", "Z"),
+            "--deadline", deadline.isoformat().replace("+00:00", "Z"),
+            "--scope-fingerprint", "scope-v1",
+        )
+        self.assertEqual(code, 2)
+        self.assertIn("future", payload["error"])
+
+    def test_strategy_reset_creates_named_pause(self):
+        code, payload = self.project(B, premise="invalid")
+        self.assertEqual(code, 0)
+        self.assertEqual(payload["decision"], "STRATEGY_RESET_REQUIRED")
+        state = json.loads(self.state.read_text())
+        self.assertEqual(state["session"]["state"], "PAUSED")
+        self.assertEqual(
+            state["session"]["pause_reasons"][0]["code"],
+            "STRATEGY_RESET_REQUIRED",
+        )
+        self.assertEqual(self.project(B)[0], 0)
+        self.assertEqual(self.guard("patch", B)[0], 3)
+
     def test_post_cutoff_blocking_feedback_pauses_and_is_not_admitted(self):
-        created = "2026-08-25T00:00:01Z"
         code, payload = self.cli(
             "defer-feedback", "--state", str(self.state), "--head", B,
-            "--thread-id", "late-p1", "--created-at", created,
+            "--thread-id", "late-p1", "--created-at", self.late_feedback_time,
             "--classification", "post-cutoff-blocking", "--reason", "late blocker",
         )
         self.assertEqual(code, 0)
@@ -143,12 +183,27 @@ class SessionControlTest(unittest.TestCase):
     def test_later_nonblocking_feedback_is_deferred_not_consumed(self):
         code, payload = self.cli(
             "defer-feedback", "--state", str(self.state), "--head", B,
-            "--thread-id", "late-note", "--created-at", "2026-08-25T00:00:01Z",
+            "--thread-id", "late-note", "--created-at", self.late_feedback_time,
             "--classification", "later-nonblocking", "--reason", "future session",
         )
         self.assertEqual(code, 0)
         self.assertFalse(payload["admitted_to_current_session"])
         self.assertEqual(payload["session_state"], "OPEN")
+
+    def test_blocking_reply_upgrades_deferred_thread_to_named_pause(self):
+        self.assertEqual(self.cli(
+            "defer-feedback", "--state", str(self.state), "--head", B,
+            "--thread-id", "late-thread", "--created-at", self.late_feedback_time,
+            "--classification", "later-nonblocking", "--reason", "future session",
+        )[0], 0)
+        code, payload = self.cli(
+            "defer-feedback", "--state", str(self.state), "--head", B,
+            "--thread-id", "late-thread", "--created-at", self.late_feedback_time,
+            "--classification", "post-cutoff-blocking", "--reason", "late blocker",
+        )
+        self.assertEqual(code, 0)
+        self.assertFalse(payload["admitted_to_current_session"])
+        self.assertEqual(payload["session_state"], "PAUSED")
 
     def test_review_request_requires_convergence_and_is_once_per_head(self):
         self.assertEqual(self.guard("request-review", B)[0], 3)
