@@ -126,6 +126,10 @@ class SessionControlTest(unittest.TestCase):
         code, payload = self.project(D)
         self.assertEqual(code, 0)
         self.assertEqual(payload["decision"], "AUTOMATION_FUSE_EXHAUSTED")
+        self.assertEqual(
+            json.loads(self.state.read_text())["session"]["state"],
+            "PAUSED",
+        )
         code, denied = self.guard("patch", D)
         self.assertEqual(code, 3)
         self.assertEqual(denied["decision"], "AUTOMATION_FUSE_EXHAUSTED")
@@ -141,6 +145,10 @@ class SessionControlTest(unittest.TestCase):
         path.write_text(json.dumps(spoof))
         self.assertEqual(self.cli(
             "project", "--state", str(self.state), "--signals", str(path), "--head", D,
+        )[0], 2)
+        self.assertEqual(self.cli(
+            "extend-fuse", "--state", str(self.state), "--head", D,
+            "--additional-rounds", "1", "--direction", " ",
         )[0], 2)
         code, extended = self.cli(
             "extend-fuse", "--state", str(self.state), "--head", D,
@@ -260,6 +268,14 @@ class SessionControlTest(unittest.TestCase):
         )
 
     def test_successor_preserves_review_request_history(self):
+        state = json.loads(self.state.read_text())
+        state["session"]["feedback_cutoff"] = (
+            datetime.now(timezone.utc) - timedelta(minutes=2)
+        ).isoformat().replace("+00:00", "Z")
+        state["session"]["recheck_deadline"] = (
+            datetime.now(timezone.utc) - timedelta(seconds=30)
+        ).isoformat().replace("+00:00", "Z")
+        self.state.write_text(json.dumps(state))
         self.assertEqual(self.project(
             B, frontier="empty", patch_required=False,
             obligations_complete=True, qa_acceptable=True,
@@ -303,6 +319,18 @@ class SessionControlTest(unittest.TestCase):
             "--authorization", second_guard["authorization"],
             "--from-head", B, "--to-head", C,
         )[0], 2)
+
+    def test_stale_successor_cannot_authorize_after_campaign_pause(self):
+        successor = self.dir / "paused-concurrent-successor.json"
+        self.assertEqual(self.cli(
+            "init", "--state", str(successor), "--repository", "owner/repo",
+            "--pr", "79", "--base-sha", A, "--head-sha", B,
+            "--cutoff", self.cutoff, "--deadline", self.deadline,
+            "--scope-fingerprint", "scope-v1",
+        )[0], 0)
+        self.assertEqual(self.project_state(successor, B)[0], 0)
+        self.assertEqual(self.project(B, premise="invalid")[0], 0)
+        self.assertEqual(self.guard_state(successor, "patch", B)[0], 3)
 
     def test_campaign_ledger_uses_repository_root_from_subdirectory(self):
         self.assertEqual(self.project(B)[0], 0)
@@ -373,6 +401,19 @@ class SessionControlTest(unittest.TestCase):
             B, frontier="empty", patch_required=False,
             obligations_complete=True, qa_acceptable=True,
         )[0], 0)
+        self.assertEqual(self.guard("request-review", B)[0], 3)
+        state = json.loads(self.state.read_text())
+        state["session"]["feedback_cutoff"] = (
+            datetime.now(timezone.utc) - timedelta(minutes=2)
+        ).isoformat().replace("+00:00", "Z")
+        state["session"]["recheck_deadline"] = (
+            datetime.now(timezone.utc) - timedelta(seconds=30)
+        ).isoformat().replace("+00:00", "Z")
+        self.state.write_text(json.dumps(state))
+        self.assertEqual(self.project(
+            B, frontier="empty", patch_required=False,
+            obligations_complete=True, qa_acceptable=True,
+        )[0], 0)
         code, guarded = self.guard("request-review", B)
         self.assertEqual(code, 0)
         self.assertEqual(self.cli(
@@ -391,6 +432,11 @@ class SessionControlTest(unittest.TestCase):
             "resume", "--state", str(self.state), "--head", B,
             "--pause-id", "strategy", "--scope-fingerprint", "changed",
             "--direction", "continue",
+        )[0], 2)
+        self.assertEqual(self.cli(
+            "resume", "--state", str(self.state), "--head", B,
+            "--pause-id", "strategy", "--scope-fingerprint", "scope-v1",
+            "--direction", " ",
         )[0], 2)
         code, payload = self.cli(
             "resume", "--state", str(self.state), "--head", B,

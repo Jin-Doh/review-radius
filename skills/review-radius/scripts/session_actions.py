@@ -125,6 +125,23 @@ def persist_campaign(state: dict[str, Any]) -> None:
         write_campaign(state)
 
 
+def campaign_matches(state: dict[str, Any], campaign: dict[str, Any]) -> bool:
+    session = state["session"]
+    return (
+        campaign["patch_rounds"] == session["patch_rounds"]
+        and campaign["automatic_patch_budget"] == session["automatic_patch_budget"]
+        and campaign["pause_reasons"] == session["pause_reasons"]
+        and campaign["review_requested_heads"] == session["review_requested_heads"]
+        and campaign["state"] == state["campaign"]["state"]
+    )
+
+
+def require_direction(value: str) -> str:
+    if not value.strip():
+        raise StateError("direction must be nonempty")
+    return value
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     path = Path(args.state)
     if path.exists():
@@ -199,13 +216,22 @@ def cmd_project(args: argparse.Namespace) -> int:
     result = evaluate(projected)
     state["signals"] = projected
     state["governor"] = result
-    if result["decision"] == "STRATEGY_RESET_REQUIRED":
+    state["session"]["last_projected_at"] = now()
+    if result["decision"] in {
+        "STRATEGY_RESET_REQUIRED",
+        "AUTOMATION_FUSE_EXHAUSTED",
+    }:
+        code = result["decision"]
         reasons = state["session"]["pause_reasons"]
-        if not any(reason.get("code") == "STRATEGY_RESET_REQUIRED" for reason in reasons):
+        if not any(reason.get("code") == code for reason in reasons):
             reasons.append({
-                "id": "strategy-reset",
-                "code": "STRATEGY_RESET_REQUIRED",
-                "detail": "A strategy decision requires recorded explicit direction.",
+                "id": code.lower().replace("_", "-"),
+                "code": code,
+                "detail": (
+                    "A strategy decision requires recorded explicit direction."
+                    if code == "STRATEGY_RESET_REQUIRED"
+                    else "Fuse exhaustion requires an explicit extension."
+                ),
             })
         state["session"]["state"] = "PAUSED"
         state["campaign"]["state"] = "PAUSED"
@@ -237,11 +263,8 @@ def cmd_guard(args: argparse.Namespace) -> int:
         session["pr"],
         session["automatic_patch_budget"],
     )
-    if (
-        campaign["patch_rounds"] != session["patch_rounds"]
-        or campaign["automatic_patch_budget"] != session["automatic_patch_budget"]
-    ):
-        reasons.append("session patch lineage is stale")
+    if not campaign_matches(state, campaign):
+        reasons.append("session campaign lineage is stale")
     if session["state"] != "OPEN":
         reasons.append(f"session state is {session['state']}")
     if state["campaign"]["state"] != "OPEN":
@@ -255,6 +278,16 @@ def cmd_guard(args: argparse.Namespace) -> int:
             reasons.append("automated review request requires CONVERGED")
         if args.head in session["review_requested_heads"]:
             reasons.append("automated review already requested for this head")
+        deadline = parse_time(session["recheck_deadline"], "recheck_deadline")
+        current_time = parse_time(now(), "current time")
+        projected_at = session.get("last_projected_at")
+        if deadline > current_time:
+            reasons.append("recheck deadline has not elapsed")
+        elif (
+            not isinstance(projected_at, str)
+            or parse_time(projected_at, "last_projected_at") < deadline
+        ):
+            reasons.append("convergence must be projected after recheck deadline")
     if reasons:
         return deny(args.action, reasons, state)
     state["revision"] += 1
@@ -303,11 +336,8 @@ def cmd_record_patch(args: argparse.Namespace) -> int:
             session["pr"],
             session["automatic_patch_budget"],
         )
-        if (
-            campaign["patch_rounds"] != session["patch_rounds"]
-            or campaign["automatic_patch_budget"] != session["automatic_patch_budget"]
-        ):
-            raise StateError("session patch lineage is stale")
+        if not campaign_matches(state, campaign):
+            raise StateError("session campaign lineage is stale")
         session["patch_rounds"] += 1
         session["current_head"] = to_head
         state["signals"] = default_signals(
@@ -423,6 +453,7 @@ def cmd_resume(args: argparse.Namespace) -> int:
     path = Path(args.state)
     state = load(path)
     head_matches(state, args.head)
+    direction = require_direction(args.direction)
     if args.scope_fingerprint != state["session"]["scope_fingerprint"]:
         raise StateError("scope fingerprint changed; open a successor session")
     reasons = state["session"]["pause_reasons"]
@@ -438,7 +469,7 @@ def cmd_resume(args: argparse.Namespace) -> int:
         state,
         "pause_resolved",
         pause_id=args.pause_id,
-        direction=args.direction,
+        direction=direction,
     )
     persist_campaign(state)
     emit({"resumed": True, "session_state": state["session"]["state"]})
@@ -449,12 +480,21 @@ def cmd_extend(args: argparse.Namespace) -> int:
     path = Path(args.state)
     state = load(path)
     head_matches(state, args.head)
+    direction = require_direction(args.direction)
     if args.additional_rounds <= 0:
         raise StateError("additional_rounds must be positive")
     if decision(state)["decision"] != "AUTOMATION_FUSE_EXHAUSTED":
         raise StateError("fuse may be extended only after AUTOMATION_FUSE_EXHAUSTED")
     session = state["session"]
     session["automatic_patch_budget"] += args.additional_rounds
+    state["session"]["pause_reasons"] = [
+        reason
+        for reason in state["session"]["pause_reasons"]
+        if reason.get("code") != "AUTOMATION_FUSE_EXHAUSTED"
+    ]
+    if not state["session"]["pause_reasons"]:
+        state["session"]["state"] = "OPEN"
+        state["campaign"]["state"] = "OPEN"
     state["signals"]["automatic_patch_budget"] = session["automatic_patch_budget"]
     state["governor"] = evaluate(state["signals"])
     mutate(
@@ -462,7 +502,7 @@ def cmd_extend(args: argparse.Namespace) -> int:
         state,
         "fuse_extended",
         additional_rounds=args.additional_rounds,
-        direction=args.direction,
+        direction=direction,
     )
     persist_campaign(state)
     emit({
